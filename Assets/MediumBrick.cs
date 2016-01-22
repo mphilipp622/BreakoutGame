@@ -12,7 +12,10 @@ public class MediumBrick : MonoBehaviour {
 
 	void Update () {
 		if (hp == 0)
+		{
+			SendMessageUpwards("RemoveBrick", transform);
 			Destroy (gameObject);
+		}
 	}
 
 	void OnCollisionEnter2D(Collision2D collision){

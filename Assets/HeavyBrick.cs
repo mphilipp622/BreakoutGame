@@ -14,11 +14,15 @@ public class HeavyBrick : MonoBehaviour {
 	
 	void Update () {
 		switch (hp) {
-		case 0: Destroy (gameObject);
+		case 0: 
+			SendMessageUpwards("RemoveBrick", transform);
+			Destroy (gameObject);
 			break;
-		case 1: brickSprite.color = Color.red;
+		case 1: 
+			brickSprite.color = Color.red;
 			break;
-		case 2: brickSprite.sprite = newSprite;
+		case 2: 
+			brickSprite.sprite = newSprite;
 			break;
 		}
 	}
