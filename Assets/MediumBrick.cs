@@ -13,9 +13,12 @@ public class MediumBrick : MonoBehaviour {
 	void Update () {
 		if (hp == 0)
 		{
-			SendMessageUpwards("RemoveBrick", transform);
+			Master.instance.RemoveBrick(transform);
 			Destroy (gameObject);
 		}
+
+		if(transform.position.y <= Master.instance.paddle.position.y)
+			Master.instance.gameOver = true;
 	}
 
 	void OnCollisionEnter2D(Collision2D collision){

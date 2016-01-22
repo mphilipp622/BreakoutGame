@@ -2,13 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class SpawnBricks : MonoBehaviour {
+public class Master : MonoBehaviour {
 
 	[SerializeField]
 	private Transform[] bricks;
 	private List<Transform> spawnedBricks;
 	private Rect[] spawnGrid;
-	private Rect spawnArea;
+//	private Rect spawnArea;
 	public Texture2D texture;
 	private GUIStyle style;
 	private Vector2 randomSpawn, organizedSpawn;
@@ -16,14 +16,29 @@ public class SpawnBricks : MonoBehaviour {
 	private Rect lastRect;
 	public float rowSpace, columnSpace;
 	private SpriteRenderer brickRender;
+
+	[SerializeField]
 	float spawnTime;
+	float nextSpawn;
+
+	public static Master instance = null;
+	public bool gameOver = false;
+	public Transform paddle;
+
+	void Awake()
+	{
+		if (instance == null)
+			instance = this;
+		else if (instance != this)
+			Destroy (gameObject);
+	}
 
 	void Start () {
+		paddle = GameObject.Find("Paddle").transform;
 		spawnedBricks = new List<Transform>();
-		spawnTime = 5.0f;
 		brickRender = bricks [0].GetComponent<SpriteRenderer> ();
 		spawnGrid = new Rect[numberOfBricks];
-		spawnArea = new Rect (Camera.main.pixelRect.position, new Vector2(Camera.main.pixelWidth, Camera.main.pixelHeight/2));
+		//spawnArea = new Rect (Camera.main.pixelRect.position, new Vector2(Camera.main.pixelWidth, Camera.main.pixelHeight/2));
 
 		SpawnNewBricks();
 		//ParentBricks();
@@ -31,11 +46,14 @@ public class SpawnBricks : MonoBehaviour {
 	
 	void Update()
 	{
-		if(Time.timeSinceLevelLoad >= spawnTime)
+		if(Time.timeSinceLevelLoad >= nextSpawn)
 		{
 			MoveBricks();
 			SpawnNewBricks();
 		}
+
+		if(gameOver)
+			GameOver();
 	}
 	void OnGUI()
 	{
@@ -47,13 +65,12 @@ public class SpawnBricks : MonoBehaviour {
 	//Move bricks down by a row
 	void MoveBricks()
 	{
-		Debug.Log("MOVE BRICK");
 		for(int i = 0; i < spawnedBricks.Count; i++)
 		{
 			spawnedBricks[i].position = new Vector2(spawnedBricks[i].position.x, spawnedBricks[i].position.y - brickRender.bounds.size.y);
 			
 		}
-		spawnTime = Time.timeSinceLevelLoad + 5;
+		nextSpawn = Time.timeSinceLevelLoad + spawnTime;
 	}
 
 	void SpawnNewBricks()
@@ -107,11 +124,11 @@ public class SpawnBricks : MonoBehaviour {
 		}
 		
 		//Parent all the new bricks to the Master Object
-		for (int i = 0; i < spawnedBricks.Count; i++)
-		{
-			if(spawnedBricks[i].parent == null)
-				spawnedBricks[i].parent = transform;
-		}
+		//for (int i = 0; i < spawnedBricks.Count; i++)
+		//{
+		//	if(spawnedBricks[i].parent == null)
+		//		spawnedBricks[i].parent = transform;
+		//}
 
 		/*for(int i = 0; i < numberOfBricks; i++)
 		{
@@ -162,8 +179,13 @@ public class SpawnBricks : MonoBehaviour {
 	}
 
 	//Remove Bricks from List when they're destroyed
-	void RemoveBrick(Transform brickToDestroy)
+	public void RemoveBrick(Transform brickToDestroy)
 	{
 		spawnedBricks.Remove(brickToDestroy);
+	}
+
+	void GameOver()
+	{
+		Time.timeScale = 0;
 	}
 }

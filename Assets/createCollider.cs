@@ -17,8 +17,8 @@ public class createCollider : MonoBehaviour {
 		gameOverTrigger.points = new Vector2[] {new Vector2(-horizontalExtent, -vertExtent), new Vector2(horizontalExtent, -vertExtent)};
 	}
 
-	void OnTriggerEnter2D(Collider2D other) {
-		Time.timeScale = 0;
-		GameObject.Find ("Menu UI").GetComponent<GameOverMenuScript> ().gameOver = true;
+	void OnTriggerEnter2D(Collider2D other) 
+	{
+		Master.instance.gameOver = true;
 	}
 }

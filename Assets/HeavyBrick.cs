@@ -15,7 +15,7 @@ public class HeavyBrick : MonoBehaviour {
 	void Update () {
 		switch (hp) {
 		case 0: 
-			SendMessageUpwards("RemoveBrick", transform);
+			Master.instance.RemoveBrick(transform);
 			Destroy (gameObject);
 			break;
 		case 1: 
@@ -25,9 +25,13 @@ public class HeavyBrick : MonoBehaviour {
 			brickSprite.sprite = newSprite;
 			break;
 		}
+
+		if(transform.position.y <= Master.instance.paddle.position.y)
+			Master.instance.gameOver = true;
 	}
 	
-	void OnCollisionEnter2D(Collision2D collision){
+	void OnCollisionEnter2D(Collision2D collision)
+	{
 		hp--;
 	}
 }
