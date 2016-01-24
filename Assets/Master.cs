@@ -41,6 +41,7 @@ public class Master : MonoBehaviour {
 		//spawnArea = new Rect (Camera.main.pixelRect.position, new Vector2(Camera.main.pixelWidth, Camera.main.pixelHeight/2));
 
 		SpawnNewBricks();
+
 		//ParentBricks();
 	}
 	
@@ -70,7 +71,7 @@ public class Master : MonoBehaviour {
 			spawnedBricks[i].position = new Vector2(spawnedBricks[i].position.x, spawnedBricks[i].position.y - brickRender.bounds.size.y);
 			
 		}
-		nextSpawn = Time.timeSinceLevelLoad + spawnTime;
+
 	}
 
 	void SpawnNewBricks()
@@ -122,6 +123,8 @@ public class Master : MonoBehaviour {
 					bricks[0].GetComponent<SpriteRenderer>().bounds.size.y));
 		}*/
 		}
+		
+		nextSpawn = Time.timeSinceLevelLoad + spawnTime;
 		
 		//Parent all the new bricks to the Master Object
 		//for (int i = 0; i < spawnedBricks.Count; i++)

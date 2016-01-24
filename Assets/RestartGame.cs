@@ -6,7 +6,7 @@ public class RestartGame : MonoBehaviour {
 	// Use this for initialization
 	void Start () 
 	{
-	
+		Time.timeScale = 1;
 	}
 	
 	// Update is called once per frame
@@ -18,6 +18,6 @@ public class RestartGame : MonoBehaviour {
 	public void Restart()
 	{
 		Application.LoadLevel (Application.loadedLevel);
-		Time.timeScale = 1;
+
 	}
 }
