@@ -11,7 +11,7 @@ public class BallScript : MonoBehaviour {
 	void Start () 
 	{
 		ball = GetComponent<Rigidbody2D> ();
-		ball.AddForce (new Vector2(Random.Range(-10 * ballSpeedMultiplier, 10), 10), ForceMode2D.Impulse);
+		ball.AddForce (new Vector2(Random.Range(-10 * ballSpeedMultiplier, 10), 10 * ballSpeedMultiplier), ForceMode2D.Impulse);
 	}
 
 	void Update () 
