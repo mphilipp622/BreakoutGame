@@ -10,7 +10,7 @@ public class Master : MonoBehaviour {
 	private Rect[] spawnGrid;
 //	private Rect spawnArea;
 	public Texture2D texture;
-	private GUIStyle style;
+	private GUIStyle style = new GUIStyle();
 	private Vector2 randomSpawn, organizedSpawn;
 	public int numberOfBricks;
 	private Rect lastRect;
@@ -32,6 +32,8 @@ public class Master : MonoBehaviour {
     public bool newSpawn = false;
     int index = 0;
 
+	public Material[] outlineMats;
+
 	void Awake()
 	{
 		if (instance == null)
@@ -46,6 +48,8 @@ public class Master : MonoBehaviour {
 		brickRender = bricks [0].GetComponent<SpriteRenderer> ();
 		spawnGrid = new Rect[numberOfBricks];
         energy = 100;
+		texture = new Texture2D((int) bricks[0].GetComponent<SpriteRenderer>().sprite.textureRect.width, (int) bricks[0].GetComponent<SpriteRenderer>().sprite.textureRect.height);
+		//texture = new Texture2D((int)bricks[0].GetComponent<SpriteRenderer>().sprite.textureRect.width, (int)bricks[0].GetComponent<SpriteRenderer>().sprite.textureRect.height);
 		//spawnArea = new Rect (Camera.main.pixelRect.position, new Vector2(Camera.main.pixelWidth, Camera.main.pixelHeight/2));
 
 		SpawnNewBricks();
@@ -63,11 +67,73 @@ public class Master : MonoBehaviour {
 
 		if(gameOver)
 			GameOver();
+
+
 	}
 	void OnGUI()
 	{
+		
+		/*for(int i = 0; i < brickRenderers.Count; i++)
+		{
+			switch(spawnedBricks[i].GetComponent<BrickScript>().GetHP())
+			{
+			case 1:
+				for ( int a = 0; a < bricks[0].GetComponent<SpriteRenderer>().bounds.size.x; a++)
+				{
+					for ( int b = 0; b < bricks[0].GetComponent<SpriteRenderer>().bounds.size.y; b++)
+					{
+						Debug.Log((int) spawnedBricks[i].GetComponent<SpriteRenderer>().bounds.min.x + a);
+						Debug.Log((int) spawnedBricks[i].GetComponent<SpriteRenderer>().bounds.min.y + b);
+						texture.SetPixel((int) spawnedBricks[i].GetComponent<SpriteRenderer>().bounds.min.x + a, 
+										 (int) spawnedBricks[i].GetComponent<SpriteRenderer>().bounds.min.y + b, Color.green);
+					}
+				}
+				texture.Apply();
+				style.normal.background = texture;
+				GUI.Box(spawnGrid[i], texture, style);
+				break;
+			case 2:
+				for ( int a = 0; a < bricks[0].GetComponent<SpriteRenderer>().bounds.size.x; a++)
+				{
+					for ( int b = 0; b < bricks[0].GetComponent<SpriteRenderer>().bounds.size.y; b++)
+					{
+						texture.SetPixel(a, b, Color.yellow);
+					}
+				}
+				texture.Apply();
+				style.normal.background = texture;
+				GUI.Box(spawnGrid[i], texture, style);
+				break;
+			case 3:
+				for ( int a = 0; a < bricks[0].GetComponent<SpriteRenderer>().bounds.size.x; a++)
+				{
+					for ( int b = 0; b < bricks[0].GetComponent<SpriteRenderer>().bounds.size.y; b++)
+					{
+						texture.SetPixel(a, b, Color.red);
+					}
+				}
+				texture.Apply();
+				style.normal.background = texture;
+				GUI.Box(spawnGrid[i], texture, style);
+				break;
+			}
+
+		}*/
+		//texture.SetPixel(512, 512, Color.green);
+
+			
+		//texture.Apply();
+	//	style.normal.background = texture;
+		//GUI.Box(new Rect(0, 0, 512, 512), texture, style);
+		/*for(int i = 0; i < spawnedBricks.Count; i++)
+		{
+			//GUI.Box(spawnGrid[i], texture);
+			DrawQuad(new Rect(spawnedBricks[i].position.x, spawnedBricks[i].position.y, brickRenderers[i].bounds.size.x, brickRenderers[i].bounds.size.y), Color.green);
+		}
+*/
 		//for (int c = 0; c < spawnGrid.Length; c++) {
-		//	GUI.Box (spawnGrid [c], "  ");
+		//	GUI.Box (spawnGrid [c], texture, style);
+			//DrawQuad(spawnGrid[c], Color.green);
 		//}
 	}
 
@@ -114,16 +180,18 @@ public class Master : MonoBehaviour {
 		for(int i = 0; i < numberOfBricks; i++)
 		{
             //int outlineColor = Random.Range(1, 3);
-            int hp = Random.Range(1, 4);
+            //int hp = Random.Range(1, 4);
 			//Transform newBrick = Instantiate(bricks[Random.Range (0, bricks.Length)], randomSpawn, Quaternion.identity) as Transform;
             
 			spawnedBricks.Add(Instantiate(bricks[Random.Range (0, bricks.Length)], spawnGrid[i].position, Quaternion.identity) as Transform);
 			spawnedBricks[i].gameObject.layer = LayerMask.NameToLayer("Default");
-            spawnedBricks[index].GetComponent<BrickScript>().SetIndex(index);
+          //  spawnedBricks[index].GetComponent<BrickScript>().SetIndex(index);
            // brickData.Add(new BrickData(outlineColor, Instantiate(bricks[Random.Range(0, bricks.Length)], spawnGrid[i].position, Quaternion.identity) as Transform));
-            brickRenderers.Add(spawnedBricks[index].GetComponent<Renderer>());
-            spawnedBricks[index].GetComponent<BrickScript>().SetHP(hp);
-            brickInt.Add(spawnedBricks[index].GetComponent<BrickScript>().GetHP());
+          //  brickRenderers.Add(spawnedBricks[index].GetComponent<Renderer>());
+           // spawnedBricks[index].GetComponent<BrickScript>().SetHP(hp);
+           // brickInt.Add(spawnedBricks[index].GetComponent<BrickScript>().GetHP());
+
+
             index = spawnedBricks.Count;
 			/*if(spawnedBricks[i].position.x < Camera.main.pixelRect.xMax){
 				//Debug.Log("True");
@@ -199,23 +267,23 @@ public class Master : MonoBehaviour {
 	}
 
     //Remove Bricks from List when they're destroyed
-    /*public void RemoveBrick(Transform brickToDestroy, int brickIndex)
+    public void RemoveBrick(Transform brickToDestroy)
 	{
        // int index = spawnedBricks.FindIndex(brickToDestroy);
 		spawnedBricks.Remove(brickToDestroy);
-        brickRenderers.Remove(brickToDestroy.GetComponent<Renderer>());
+       // brickRenderers.Remove(brickToDestroy.GetComponent<Renderer>());
        // brickRenderers.Remove(brickToDestroyRenderer);
-        brickInt.RemoveAt(brickIndex);
-	}*/
+       // brickInt.RemoveAt(brickIndex);
+	}
 
-    public void RemoveBrick(int brickIndex)
+   /* public void RemoveBrick(int brickIndex)
     {
         // int index = spawnedBricks.FindIndex(brickToDestroy);
         spawnedBricks.RemoveAt(brickIndex);
         brickRenderers.RemoveAt(brickIndex);
         // brickRenderers.Remove(brickToDestroyRenderer);
         brickInt.RemoveAt(brickIndex);
-    }
+    }*/
 
     void GameOver()
 	{

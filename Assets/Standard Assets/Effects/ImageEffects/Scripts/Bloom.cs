@@ -80,6 +80,8 @@ namespace UnityStandardAssets.ImageEffects
         private Material brightPassFilterMaterial;
 
 
+
+
         public override bool CheckResources ()
         {
             CheckSupport (false);
@@ -354,5 +356,42 @@ namespace UnityStandardAssets.ImageEffects
                 Graphics.Blit (from, to);
             }
         }
+
+		private float startingIntensity;
+		private float fiveSeconds; 
+		private float maxIntensity;
+		float timeMultiplier;
+		bool raiseIntensity = true;
+
+		void Start()
+		{
+			fiveSeconds = Time.timeSinceLevelLoad + 5.0f;
+			startingIntensity = bloomIntensity;
+			maxIntensity = startingIntensity + 2.0f;
+			timeMultiplier = 1.0f;
+		}
+
+		void Update()
+		{
+			Mathf.Clamp(bloomIntensity, startingIntensity, maxIntensity);
+			if(bloomIntensity <= startingIntensity)
+				raiseIntensity = true;
+			
+			else if(bloomIntensity >= maxIntensity)
+				raiseIntensity = false;
+
+			//if(Time.timeSinceLevelLoad < fiveSeconds)
+			//{
+				if(raiseIntensity)
+				{
+					bloomIntensity += Time.deltaTime / timeMultiplier;
+				}
+				else if(!raiseIntensity)
+					bloomIntensity -= Time.deltaTime / timeMultiplier;
+			//}
+			//else if( Time.timeSinceLevelLoad >= fiveSeconds)
+			//	fiveSeconds = Time.timeSinceLevelLoad + timeMultiplier;
+
+		}
     }
 }

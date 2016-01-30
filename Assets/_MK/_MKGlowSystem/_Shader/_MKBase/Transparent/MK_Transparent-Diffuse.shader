@@ -7,7 +7,7 @@ Properties {
 	_MKGlowPower ("Glow Power", Range(0.0,5.0)) = 2.5
 	_MKGlowTex ("Glow Texture", 2D) = "black" {}
 	_MKGlowTexColor ("Glow Texture Color", Color) = (1,1,1,0.25)
-	_MKGlowTexStrength ("Glow Texture Strength ", Range(0.0,1.0)) = 1.0
+	_MKGlowTexStrength ("Glow Texture Strength ", Range(0.0,5.0)) = 5.0
 	_MKGlowOffSet ("Glow Width ", Range(0.0,0.075)) = 0.0
 }
 
