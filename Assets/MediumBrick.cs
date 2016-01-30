@@ -13,7 +13,7 @@ public class MediumBrick : MonoBehaviour {
 	void Update () {
 		if (hp == 0)
 		{
-			Master.instance.RemoveBrick(transform);
+			//Master.instance.RemoveBrick(transform, transform.GetComponent<Renderer>());
 			Destroy (gameObject);
 		}
 

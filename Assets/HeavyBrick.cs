@@ -15,7 +15,7 @@ public class HeavyBrick : MonoBehaviour {
 	void Update () {
 		switch (hp) {
 		case 0: 
-			Master.instance.RemoveBrick(transform);
+			//Master.instance.RemoveBrick(transform, transform.GetComponent<Renderer>());
 			Destroy (gameObject);
 			break;
 		case 1: 

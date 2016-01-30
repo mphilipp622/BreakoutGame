@@ -5,7 +5,7 @@ public class StandardBrick : MonoBehaviour {
 
 	void OnCollisionEnter2D(Collision2D collision){
 		//if (collision.gameObject.tag == "Ball")
-		Master.instance.RemoveBrick(transform);
+		//Master.instance.RemoveBrick(transform, transform.GetComponent<Renderer>());
 		Destroy (gameObject);
 	}
 

@@ -6,7 +6,7 @@ public class Master : MonoBehaviour {
 
 	[SerializeField]
 	private Transform[] bricks;
-	private List<Transform> spawnedBricks;
+	public List<Transform> spawnedBricks = new List<Transform>();
 	private Rect[] spawnGrid;
 //	private Rect spawnArea;
 	public Texture2D texture;
@@ -21,9 +21,16 @@ public class Master : MonoBehaviour {
 	float spawnTime;
 	float nextSpawn;
 
-	public static Master instance = null;
+	public static Master instance = null; //Singleton
 	public bool gameOver = false;
 	public Transform paddle;
+
+    public int energy;
+    public List<Renderer> brickRenderers = new List<Renderer>(); //used for color outlines
+    public List<int> brickInt = new List<int>(); //also used for color outlines
+    //public List<BrickData> brickData = new List<BrickData>();
+    public bool newSpawn = false;
+    int index = 0;
 
 	void Awake()
 	{
@@ -38,6 +45,7 @@ public class Master : MonoBehaviour {
 		spawnedBricks = new List<Transform>();
 		brickRender = bricks [0].GetComponent<SpriteRenderer> ();
 		spawnGrid = new Rect[numberOfBricks];
+        energy = 100;
 		//spawnArea = new Rect (Camera.main.pixelRect.position, new Vector2(Camera.main.pixelWidth, Camera.main.pixelHeight/2));
 
 		SpawnNewBricks();
@@ -105,10 +113,18 @@ public class Master : MonoBehaviour {
 		//Instanttiate New Bricks
 		for(int i = 0; i < numberOfBricks; i++)
 		{
+            //int outlineColor = Random.Range(1, 3);
+            int hp = Random.Range(1, 4);
 			//Transform newBrick = Instantiate(bricks[Random.Range (0, bricks.Length)], randomSpawn, Quaternion.identity) as Transform;
+            
 			spawnedBricks.Add(Instantiate(bricks[Random.Range (0, bricks.Length)], spawnGrid[i].position, Quaternion.identity) as Transform);
-
-
+			spawnedBricks[i].gameObject.layer = LayerMask.NameToLayer("Default");
+            spawnedBricks[index].GetComponent<BrickScript>().SetIndex(index);
+           // brickData.Add(new BrickData(outlineColor, Instantiate(bricks[Random.Range(0, bricks.Length)], spawnGrid[i].position, Quaternion.identity) as Transform));
+            brickRenderers.Add(spawnedBricks[index].GetComponent<Renderer>());
+            spawnedBricks[index].GetComponent<BrickScript>().SetHP(hp);
+            brickInt.Add(spawnedBricks[index].GetComponent<BrickScript>().GetHP());
+            index = spawnedBricks.Count;
 			/*if(spawnedBricks[i].position.x < Camera.main.pixelRect.xMax){
 				//Debug.Log("True");
 				spawnRect = new Rect (new Vector2(newBrick.GetComponent<SpriteRenderer>().bounds.max.x + newBrick.GetComponent<SpriteRenderer>().bounds.extents.x,
@@ -125,6 +141,7 @@ public class Master : MonoBehaviour {
 		}
 		
 		nextSpawn = Time.timeSinceLevelLoad + spawnTime;
+        newSpawn = true;
 		
 		//Parent all the new bricks to the Master Object
 		//for (int i = 0; i < spawnedBricks.Count; i++)
@@ -181,14 +198,35 @@ public class Master : MonoBehaviour {
 				}*/
 	}
 
-	//Remove Bricks from List when they're destroyed
-	public void RemoveBrick(Transform brickToDestroy)
+    //Remove Bricks from List when they're destroyed
+    /*public void RemoveBrick(Transform brickToDestroy, int brickIndex)
 	{
+       // int index = spawnedBricks.FindIndex(brickToDestroy);
 		spawnedBricks.Remove(brickToDestroy);
-	}
+        brickRenderers.Remove(brickToDestroy.GetComponent<Renderer>());
+       // brickRenderers.Remove(brickToDestroyRenderer);
+        brickInt.RemoveAt(brickIndex);
+	}*/
 
-	void GameOver()
+    public void RemoveBrick(int brickIndex)
+    {
+        // int index = spawnedBricks.FindIndex(brickToDestroy);
+        spawnedBricks.RemoveAt(brickIndex);
+        brickRenderers.RemoveAt(brickIndex);
+        // brickRenderers.Remove(brickToDestroyRenderer);
+        brickInt.RemoveAt(brickIndex);
+    }
+
+    void GameOver()
 	{
 		Time.timeScale = 0;
 	}
+
+    public void GetRenderer()
+    {
+        foreach (Transform brick in spawnedBricks)
+        {
+            brickRenderers.Add(brick.GetComponent<Renderer>());
+        }
+    }
 }
