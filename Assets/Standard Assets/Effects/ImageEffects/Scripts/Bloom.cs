@@ -367,7 +367,7 @@ namespace UnityStandardAssets.ImageEffects
 		{
 			fiveSeconds = Time.timeSinceLevelLoad + 5.0f;
 			startingIntensity = bloomIntensity;
-			maxIntensity = startingIntensity + 2.0f;
+			maxIntensity = startingIntensity + 1.0f;
 			timeMultiplier = 1.0f;
 		}
 

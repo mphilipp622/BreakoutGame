@@ -32,6 +32,7 @@ public class Master : MonoBehaviour {
     public bool newSpawn = false;
     int index = 0;
 
+
 	public Material[] outlineMats;
 
 	void Awake()
