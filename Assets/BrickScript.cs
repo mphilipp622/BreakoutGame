@@ -11,22 +11,24 @@ public class BrickScript : MonoBehaviour
     [SerializeField]
     private int index;
 	Material brickMat;
-	LineRenderer outline;
+	//LineRenderer outline;
+	SpriteRenderer renderer;
 
     void Start()
     {
-		outline = GetComponent<LineRenderer>();
+		renderer = GetComponent<SpriteRenderer>();
+		/*outline = GetComponent<LineRenderer>();
 		outline.SetWidth(GetComponent<SpriteRenderer>().bounds.extents.y * 2, GetComponent<SpriteRenderer>().bounds.extents.y * 2);
 		outline.SetPosition(0, new Vector3(GetComponent<SpriteRenderer>().bounds.min.x, transform.position.y, -1.0f));
-		outline.SetPosition(1, new Vector3(GetComponent<SpriteRenderer>().bounds.max.x, transform.position.y, -1.0f));
-		brickMat = outline.material;
+		outline.SetPosition(1, new Vector3(GetComponent<SpriteRenderer>().bounds.max.x, transform.position.y, -1.0f));*/
+		brickMat = renderer.material;
         hp = Random.Range(1, 4);
     }
 
     void Update()
     {
-		outline.SetPosition(0, new Vector3(GetComponent<SpriteRenderer>().bounds.min.x, transform.position.y, -1.0f));
-		outline.SetPosition(1, new Vector3(GetComponent<SpriteRenderer>().bounds.max.x, transform.position.y, -1.0f));
+		//outline.SetPosition(0, new Vector3(GetComponent<SpriteRenderer>().bounds.min.x, transform.position.y, -1.0f));
+		//outline.SetPosition(1, new Vector3(GetComponent<SpriteRenderer>().bounds.max.x, transform.position.y, -1.0f));
 
         switch (hp)
         {
@@ -36,15 +38,15 @@ public class BrickScript : MonoBehaviour
                 break;
             case 1:
                 outlineInt = 1;
-				outline.material = Master.instance.outlineMats[0];
+				renderer.material = Master.instance.outlineMats[0];
                 break;
             case 2:
                 outlineInt = 2;
-				outline.material = Master.instance.outlineMats[1];
+				renderer.material = Master.instance.outlineMats[1];
                 break;
             case 3:
                 outlineInt = 3;
-				outline.material = Master.instance.outlineMats[2];
+				renderer.material = Master.instance.outlineMats[2];
                 break;
         }
         

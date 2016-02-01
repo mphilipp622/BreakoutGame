@@ -7,16 +7,19 @@ public class BallScript : MonoBehaviour {
 	public float ballSpeedMultiplier = 1f;
 	float min_y_velocity = 5.0f;
 	float min_x_velocity = 5.0f;
+	Material ballMat;
 
 	void Start () 
 	{
 		ball = GetComponent<Rigidbody2D> ();
 		ball.AddForce (new Vector2(Random.Range(-10 * ballSpeedMultiplier, 10), 10 * ballSpeedMultiplier), ForceMode2D.Impulse);
+		ballMat = GetComponent<SpriteRenderer>().material;
 	}
 
 	void Update () 
 	{
 
+		//ballMat.SetTextureOffset("_MKGlowTex", new Vector2(Time.timeSinceLevelLoad / 2, Time.timeSinceLevelLoad / 2));
 		//Check and see if the ball is not moving enough along either X or Y axis. The amount necessary is dictated by min_y_velocity and min_x_velocity variables.
 		if((ball.velocity.y < min_y_velocity) && 
 			(Mathf.Sign(ball.velocity.y) == 1)) //returns 1 if y velocity is positive or 0
@@ -39,6 +42,15 @@ public class BallScript : MonoBehaviour {
 		{
 			ball.AddForce(new Vector2(-5f, 0));
 		}
+
+		if(ball.velocity.y > 0 && ball.velocity.x > 0)
+			ballMat.SetTextureOffset("_MKGlowTex", new Vector2(Time.timeSinceLevelLoad, Time.timeSinceLevelLoad));
+		else if(ball.velocity.y > 0 && ball.velocity.x < 0)
+			ballMat.SetTextureOffset("_MKGlowTex", new Vector2(-Time.timeSinceLevelLoad, Time.timeSinceLevelLoad));
+		else if(ball.velocity.y < 0 && ball.velocity.x > 0)
+			ballMat.SetTextureOffset("_MKGlowTex", new Vector2(Time.timeSinceLevelLoad, -Time.timeSinceLevelLoad));
+		else if(ball.velocity.y < 0 && ball.velocity.x < 0)
+			ballMat.SetTextureOffset("_MKGlowTex", new Vector2(-Time.timeSinceLevelLoad, -Time.timeSinceLevelLoad));
 	}
 
 	/*void OnCollisionEnter2D (Collision2D collision){

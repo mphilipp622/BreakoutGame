@@ -11,11 +11,17 @@ public class PaddleController : MonoBehaviour {
 	public bool hittingLeft, hittingRight;
 	private float horizontalCam;
 
+	LineRenderer outline;
+
 	void Start () {
 		sprite = GetComponent<SpriteRenderer> ();
 		spriteWidth = sprite.sprite.bounds.size.x * transform.localScale.x;
 		currentPosition = transform.position;
 		horizontalCam = Camera.main.orthographicSize * Screen.width / Screen.height;
+		outline = GetComponent<LineRenderer>();
+		outline.SetWidth(GetComponent<SpriteRenderer>().bounds.extents.y * 2, GetComponent<SpriteRenderer>().bounds.extents.y * 2);
+		outline.SetPosition(0, new Vector3(GetComponent<SpriteRenderer>().bounds.min.x, transform.position.y, -1.0f));
+		outline.SetPosition(1, new Vector3(GetComponent<SpriteRenderer>().bounds.max.x, transform.position.y, -1.0f));
 	}
 
 	void Update () {
@@ -28,6 +34,9 @@ public class PaddleController : MonoBehaviour {
 			hittingLeft = true;
 		else if (transform.position.x + spriteWidth / 2 >= horizontalCam)
 			hittingRight = true;
+
+		outline.SetPosition(0, new Vector3(GetComponent<SpriteRenderer>().bounds.min.x, transform.position.y, -1.0f));
+		outline.SetPosition(1, new Vector3(GetComponent<SpriteRenderer>().bounds.max.x, transform.position.y, -1.0f));
 
 	}
 
