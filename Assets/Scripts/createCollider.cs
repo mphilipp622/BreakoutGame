@@ -19,6 +19,9 @@ public class createCollider : MonoBehaviour {
 
 	void OnTriggerEnter2D(Collider2D other) 
 	{
-		Master.instance.gameOver = true;
+		if(other.tag == "Ball")
+			Master.instance.gameOver = true;
+		else
+			Destroy(other.gameObject);
 	}
 }

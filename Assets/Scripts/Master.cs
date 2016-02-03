@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
+using UnityStandardAssets.ImageEffects;
 
 public class Master : MonoBehaviour {
 
@@ -25,7 +27,7 @@ public class Master : MonoBehaviour {
 	public bool gameOver = false;
 	public Transform paddle;
 
-    public int energy;
+    
     public List<Renderer> brickRenderers = new List<Renderer>(); //used for color outlines
     public List<int> brickInt = new List<int>(); //also used for color outlines
     //public List<BrickData> brickData = new List<BrickData>();
@@ -34,6 +36,24 @@ public class Master : MonoBehaviour {
 
 
 	public Material[] outlineMats;
+
+	//Power Bar Variables
+	public float energy, maxEnergy = 100.0f;
+	float energyRegenSpeed, energyRegenTime, energyRegenAmount = 1.0f;
+	private Slider powerBar;
+
+	//Chaos Ball Variables
+	float chaosCost;
+	int numberOfBalls = 1;
+	[SerializeField]
+	int numToSpawn = 4;
+	public Rigidbody2D[] spawnedBalls;
+	public bool chaosBall = false;
+	private Rigidbody2D ball;
+	[SerializeField]
+	Rigidbody2D spawnBall;
+	float ballSpeed;
+	public bool ballInPlay = false;
 
 	void Awake()
 	{
@@ -44,11 +64,19 @@ public class Master : MonoBehaviour {
 	}
 
 	void Start () {
+		powerBar = GameObject.Find("PowerBar").GetComponent<Slider>();
+		ball = GameObject.Find("Ball").GetComponent<Rigidbody2D>();
+		ballSpeed = ball.GetComponent<BallScript>().ballSpeedMultiplier;
+		spawnedBalls = new Rigidbody2D[numToSpawn];
 		paddle = GameObject.Find("Paddle").transform;
 		spawnedBricks = new List<Transform>();
 		brickRender = bricks [0].GetComponent<SpriteRenderer> ();
 		spawnGrid = new Rect[numberOfBricks];
-        energy = 100;
+        energy = 100.0f;
+		energyRegenSpeed = 1.0f;
+		energyRegenTime = Time.timeSinceLevelLoad + energyRegenSpeed;
+		chaosCost = 15.0f;
+		powerBar.maxValue = maxEnergy;
 		texture = new Texture2D((int) bricks[0].GetComponent<SpriteRenderer>().sprite.textureRect.width, (int) bricks[0].GetComponent<SpriteRenderer>().sprite.textureRect.height);
 		//texture = new Texture2D((int)bricks[0].GetComponent<SpriteRenderer>().sprite.textureRect.width, (int)bricks[0].GetComponent<SpriteRenderer>().sprite.textureRect.height);
 		//spawnArea = new Rect (Camera.main.pixelRect.position, new Vector2(Camera.main.pixelWidth, Camera.main.pixelHeight/2));
@@ -69,11 +97,39 @@ public class Master : MonoBehaviour {
 		if(gameOver)
 			GameOver();
 
+		if(Input.GetKeyDown(KeyCode.Mouse1) && ballInPlay && energy >= chaosCost)
+			ChaosBall();
+
+		/*
+		 * switch (selectedSkill)
+		 * case chaosBall: 
+		 * 	if(chaosBall.cost >= energy)
+		 * 		ChaosBall();
+		 * 		break;
+		 * case snipeBall:
+		 * 	if(snipeBall.cost >= energy)
+		 * 		SnipeBall();
+		 * 		break
+		 * etc.
+		 * etc.
+		 */
+
+		if(energy < maxEnergy && Time.timeSinceLevelLoad >= energyRegenTime)
+		{
+			energy += energyRegenAmount;
+			energyRegenTime = Time.timeSinceLevelLoad + energyRegenSpeed;
+		}
+
+		if(energy > maxEnergy)
+			energy = maxEnergy;
 
 	}
+
 	void OnGUI()
 	{
-		
+		powerBar.value = energy;
+		//if(powerBar.value == 0)
+		//	powerBar.fillRect.gameObject.SetActive(false);
 		/*for(int i = 0; i < brickRenderers.Count; i++)
 		{
 			switch(spawnedBricks[i].GetComponent<BrickScript>().GetHP())
@@ -144,7 +200,6 @@ public class Master : MonoBehaviour {
 		for(int i = 0; i < spawnedBricks.Count; i++)
 		{
 			spawnedBricks[i].position = new Vector2(spawnedBricks[i].position.x, spawnedBricks[i].position.y - brickRender.bounds.size.y);
-			
 		}
 
 	}
@@ -267,6 +322,19 @@ public class Master : MonoBehaviour {
 				}*/
 	}
 
+	void ChaosBall()
+	{
+		energy -= chaosCost;
+		for(int i = 0; i < numToSpawn; i++)
+		{
+			spawnedBalls[i] = (Rigidbody2D) Instantiate (spawnBall, ball.position, Quaternion.identity);
+			spawnedBalls[i].velocity = new Vector2(Random.Range(-10, 10), Random.Range(-10, 10));
+			//spawnedBalls[i].AddForce (new Vector2(Random.Range(-10 * ballSpeed, 10 * ballSpeed), Random.Range(-10 * ballSpeed, 10 * ballSpeed)), ForceMode2D.Impulse);
+			spawnedBalls[i].AddForce(spawnedBalls[i].velocity, ForceMode2D.Impulse);
+			
+		}
+	}
+
     //Remove Bricks from List when they're destroyed
     public void RemoveBrick(Transform brickToDestroy)
 	{
@@ -289,6 +357,7 @@ public class Master : MonoBehaviour {
     void GameOver()
 	{
 		Time.timeScale = 0;
+		Camera.main.GetComponent<Bloom>().bloomIntensity = 0.7f;
 	}
 
     public void GetRenderer()
