@@ -91,6 +91,8 @@ public class Master : MonoBehaviour {
 
 		SpawnNewBricks();
 
+		activeSkill.SetSkillLevel(2);
+		activeSkill.SetSkillCost(10);
 		//ParentBricks();
 	}
 	
@@ -135,6 +137,15 @@ public class Master : MonoBehaviour {
 			SniperPower();
 		else if(Input.GetKeyDown(KeyCode.Space) && ballInPlay && isSniping)
 		{
+			if(snipedBricks.Count > 0) //Destroy bricks if there are any added
+			{
+				for(int i = 0; i < snipedBricks.Count; i++)
+				{
+					RemoveBrick(snipedBricks[i].transform);
+					Destroy(snipedBricks[i]);
+				}
+				snipedBricks.Clear();
+			}
 			isSniping = false;
 			Time.timeScale = 1;
 		}
@@ -351,23 +362,33 @@ public class Master : MonoBehaviour {
 		}
 	}
 
-void SniperPower()
-{
-	isSniping = true;
-	energy -= activeSkill.GetSkillCost();
-	Time.timeScale = 0;
+	void SniperPower()
+	{
+		isSniping = true;
+		energy -= activeSkill.GetSkillCost();
+		Time.timeScale = 0;
+	}
 
+	public void SetBricksToSnipe(GameObject brick)
+	{
+		//activeSkill.GetSkillLevel();
+		if(!snipedBricks.Contains(brick) && snipedBricks.Count < activeSkill.GetSkillLevel())
+		{
+			snipedBricks.Add(brick);
+		}
+		Debug.Log(snipedBricks.Count);
+	}
 
-}
+	public bool GetBrickToSnipe(GameObject brick)
+	{
+		return snipedBricks.Contains(brick);
+	}
 
-public void SetBricksToSnipe(GameObject brick)
-{
-	activeSkill.GetSkillLevel();
-	if(!snipedBricks.Contains(brick) && snipedBricks.Count < activeSkill.GetSkillLevel())
-		snipedBricks.Add(brick);
-
-	Debug.Log(snipedBricks.Count);
-}
+	public void RemoveBricksToSnipe(GameObject brick)
+	{
+		if(snipedBricks.Contains(brick))
+			snipedBricks.Remove(brick);
+	}
 
     //Remove Bricks from List when they're destroyed
     public void RemoveBrick(Transform brickToDestroy)

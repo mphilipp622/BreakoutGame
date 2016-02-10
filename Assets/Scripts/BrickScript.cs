@@ -13,10 +13,13 @@ public class BrickScript : MonoBehaviour
 	Material brickMat;
 	//LineRenderer outline;
 	SpriteRenderer renderer;
+	Transform sniperHighlight;
 
     void Start()
     {
 		renderer = GetComponent<SpriteRenderer>();
+		sniperHighlight = transform.GetChild(0);
+		sniperHighlight.gameObject.SetActive(false);
 		/*outline = GetComponent<LineRenderer>();
 		outline.SetWidth(GetComponent<SpriteRenderer>().bounds.extents.y * 2, GetComponent<SpriteRenderer>().bounds.extents.y * 2);
 		outline.SetPosition(0, new Vector3(GetComponent<SpriteRenderer>().bounds.min.x, transform.position.y, -1.0f));
@@ -52,11 +55,20 @@ public class BrickScript : MonoBehaviour
         
         if (transform.position.y <= Master.instance.paddle.position.y)
             Master.instance.gameOver = true;
+
+		if(Master.instance.GetBrickToSnipe(gameObject)) //Find out if the brick is selected to be sniped. If so, highlight it
+			sniperHighlight.gameObject.SetActive(true);
+		else
+			sniperHighlight.gameObject.SetActive(false);
+
+	//	if(Master.instance.isSniping && Input.GetMouseButtonUp(0))
+	//		Master.instance.RemoveBricksToSnipe(gameObject);
+
     }
 
 	void OnMouseOver()
 	{
-		if (Master.instance.isSniping)
+		if (Master.instance.isSniping && Input.GetMouseButton(0))
 			Master.instance.SetBricksToSnipe(gameObject);
 	}
 
