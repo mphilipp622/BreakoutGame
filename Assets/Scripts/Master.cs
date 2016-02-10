@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityStandardAssets.ImageEffects;
+using System;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 
 public class Master : MonoBehaviour {
 
@@ -54,6 +57,11 @@ public class Master : MonoBehaviour {
 	Rigidbody2D spawnBall;
 	float ballSpeed;
 	public bool ballInPlay = false;
+
+	//snipe skill variables
+	Powers activeSkill = new Powers();
+	public bool isSniping = false;
+	List<GameObject> snipedBricks = new List<GameObject>();
 
 	void Awake()
 	{
@@ -122,6 +130,14 @@ public class Master : MonoBehaviour {
 
 		if(energy > maxEnergy)
 			energy = maxEnergy;
+
+		if(Input.GetKeyDown(KeyCode.Space) && ballInPlay && !isSniping)
+			SniperPower();
+		else if(Input.GetKeyDown(KeyCode.Space) && ballInPlay && isSniping)
+		{
+			isSniping = false;
+			Time.timeScale = 1;
+		}
 
 	}
 
@@ -235,14 +251,14 @@ public class Master : MonoBehaviour {
 		//Instanttiate New Bricks
 		for(int i = 0; i < numberOfBricks; i++)
 		{
-            //int outlineColor = Random.Range(1, 3);
-            //int hp = Random.Range(1, 4);
-			//Transform newBrick = Instantiate(bricks[Random.Range (0, bricks.Length)], randomSpawn, Quaternion.identity) as Transform;
+            //int outlineColor = UnityEngine.Random.Range(1, 3);
+            //int hp = UnityEngine.Random.Range(1, 4);
+			//Transform newBrick = Instantiate(bricks[UnityEngine.Random.Range (0, bricks.Length)], randomSpawn, Quaternion.identity) as Transform;
             
-			spawnedBricks.Add(Instantiate(bricks[Random.Range (0, bricks.Length)], spawnGrid[i].position, Quaternion.identity) as Transform);
-			spawnedBricks[i].gameObject.layer = LayerMask.NameToLayer("Default");
+			spawnedBricks.Add(Instantiate(bricks[UnityEngine.Random.Range (0, bricks.Length)], spawnGrid[i].position, Quaternion.identity) as Transform);
+			//spawnedBricks[i].gameObject.layer = LayerMask.NameToLayer("Default");
           //  spawnedBricks[index].GetComponent<BrickScript>().SetIndex(index);
-           // brickData.Add(new BrickData(outlineColor, Instantiate(bricks[Random.Range(0, bricks.Length)], spawnGrid[i].position, Quaternion.identity) as Transform));
+           // brickData.Add(new BrickData(outlineColor, Instantiate(bricks[UnityEngine.Random.Range(0, bricks.Length)], spawnGrid[i].position, Quaternion.identity) as Transform));
           //  brickRenderers.Add(spawnedBricks[index].GetComponent<Renderer>());
            // spawnedBricks[index].GetComponent<BrickScript>().SetHP(hp);
            // brickInt.Add(spawnedBricks[index].GetComponent<BrickScript>().GetHP());
@@ -276,12 +292,12 @@ public class Master : MonoBehaviour {
 
 		/*for(int i = 0; i < numberOfBricks; i++)
 		{
-			randomSpawn = new Vector2(Random.Range(Camera.main.orthographicSize * Screen.width/ Screen.height, 
+			randomSpawn = new Vector2(UnityEngine.Random.Range(Camera.main.orthographicSize * Screen.width/ Screen.height, 
 				(Camera.main.orthographicSize * Screen.width/Screen.height) * -1),
-				Random.Range (0, Camera.main.orthographicSize));
+				UnityEngine.Random.Range (0, Camera.main.orthographicSize));
 			organizedSpawn = new Vector2(spawnRect.x, spawnRect.y);
-			//Transform newBrick = Instantiate(bricks[Random.Range (0, bricks.Length)], randomSpawn, Quaternion.identity) as Transform;
-			Transform newBrick = Instantiate(bricks[Random.Range (0, bricks.Length)], spawnGrid[i].position, Quaternion.identity) as Transform;
+			//Transform newBrick = Instantiate(bricks[UnityEngine.Random.Range (0, bricks.Length)], randomSpawn, Quaternion.identity) as Transform;
+			Transform newBrick = Instantiate(bricks[UnityEngine.Random.Range (0, bricks.Length)], spawnGrid[i].position, Quaternion.identity) as Transform;
 			newBrick.SetParent(gameObject.transform);
 
 			spawnedBricks.Add(newBrick);
@@ -313,9 +329,9 @@ public class Master : MonoBehaviour {
 						SpriteRenderer subRenderer = spawnedBricks[a].GetComponent<SpriteRenderer>();
 						if(currentRenderer.bounds.Intersects(subRenderer.bounds)){
 							Debug.Log("spawnedBricks " + i + " Intersects " + "spawnedBricks " + a);
-							spawnedBricks[i].position = new Vector2(Random.Range(Camera.main.orthographicSize * Screen.width/ Screen.height, 
+							spawnedBricks[i].position = new Vector2(UnityEngine.Random.Range(Camera.main.orthographicSize * Screen.width/ Screen.height, 
 							                                                     (Camera.main.orthographicSize * Screen.width/Screen.height) * -1),
-							                                        Random.Range (Camera.main.orthographicSize/2, Camera.main.orthographicSize));
+							                                        UnityEngine.Random.Range (Camera.main.orthographicSize/2, Camera.main.orthographicSize));
 							a = 0;
 						}
 					}
@@ -328,12 +344,30 @@ public class Master : MonoBehaviour {
 		for(int i = 0; i < numToSpawn; i++)
 		{
 			spawnedBalls[i] = (Rigidbody2D) Instantiate (spawnBall, ball.position, Quaternion.identity);
-			spawnedBalls[i].velocity = new Vector2(Random.Range(-10, 10), Random.Range(-10, 10));
-			//spawnedBalls[i].AddForce (new Vector2(Random.Range(-10 * ballSpeed, 10 * ballSpeed), Random.Range(-10 * ballSpeed, 10 * ballSpeed)), ForceMode2D.Impulse);
+			spawnedBalls[i].velocity = new Vector2(UnityEngine.Random.Range(-10, 10), UnityEngine.Random.Range(-10, 10));
+			//spawnedBalls[i].AddForce (new Vector2(UnityEngine.Random.Range(-10 * ballSpeed, 10 * ballSpeed), UnityEngine.Random.Range(-10 * ballSpeed, 10 * ballSpeed)), ForceMode2D.Impulse);
 			spawnedBalls[i].AddForce(spawnedBalls[i].velocity, ForceMode2D.Impulse);
 			
 		}
 	}
+
+void SniperPower()
+{
+	isSniping = true;
+	energy -= activeSkill.GetSkillCost();
+	Time.timeScale = 0;
+
+
+}
+
+public void SetBricksToSnipe(GameObject brick)
+{
+	activeSkill.GetSkillLevel();
+	if(!snipedBricks.Contains(brick) && snipedBricks.Count < activeSkill.GetSkillLevel())
+		snipedBricks.Add(brick);
+
+	Debug.Log(snipedBricks.Count);
+}
 
     //Remove Bricks from List when they're destroyed
     public void RemoveBrick(Transform brickToDestroy)
@@ -367,4 +401,89 @@ public class Master : MonoBehaviour {
             brickRenderers.Add(brick.GetComponent<Renderer>());
         }
     }
+
+	public void SaveData(String skillName)
+	{
+		BinaryFormatter bf = new BinaryFormatter();
+		FileStream file = File.Create(Application.persistentDataPath + "/playerInfo.dat");
+
+		Powers data = new Powers();
+		
+		switch(skillName)
+		{
+			case "ChaosBall":
+				data.SetSkillCost(10);
+				data.SetSkillLevel(1);
+				data.SetSprite(Resources.Load("ChaosBallIcon") as Sprite);
+				break;
+		}
+
+		bf.Serialize(file, data);
+		file.Close();
+	}
+
+	public void LoadData()
+	{
+		if(File.Exists(Application.persistentDataPath + "/playerInfo.dat"))
+		{
+			BinaryFormatter bf = new BinaryFormatter();
+		FileStream file = File.Open(Application.persistentDataPath + "/playerInfo.dat", FileMode.Open);
+			Powers data = (Powers) bf.Deserialize(file);
+			file.Close();
+
+			data.GetSkillCost();
+			data.GetSkillLevel();
+			data.GetSprite();
+		}
+	}
+}
+
+[Serializable]
+class Powers {
+
+	//Need to think this through.
+	float skillCost;
+	int skillLevel;
+	Sprite skillIcon;
+	//skillIcon = Resources.Load ("ChaosBallIcon");
+	//int numberOfBalls = skillLevel + 1?
+	public float GetSkillCost()
+	{
+		return skillCost;
+	}
+
+	public void SetSkillCost(int cost)
+	{
+		skillCost = cost;
+	}
+
+	public int GetSkillLevel()
+	{
+		return skillLevel;
+	}
+
+	public void SetSkillLevel(int level)
+	{
+		skillLevel = level;
+	}
+
+	public Sprite GetSprite()
+	{
+		return skillIcon;
+	}
+
+	public void SetSprite(Sprite spriteToUse)
+	{
+		skillIcon = spriteToUse;
+	}
+
+	//public Powers (string name)
+	//{
+		//switch(name)
+		//{
+		//case "ChaosBall":
+			
+		//	break;
+		//}
+	//}
 }

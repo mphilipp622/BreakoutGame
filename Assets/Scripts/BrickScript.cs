@@ -54,6 +54,12 @@ public class BrickScript : MonoBehaviour
             Master.instance.gameOver = true;
     }
 
+	void OnMouseOver()
+	{
+		if (Master.instance.isSniping)
+			Master.instance.SetBricksToSnipe(gameObject);
+	}
+
     void OnCollisionEnter2D(Collision2D collision)
     {
         hp--;
