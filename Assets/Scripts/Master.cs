@@ -13,7 +13,6 @@ public class Master : MonoBehaviour {
 	private Transform[] bricks;
 	public List<Transform> spawnedBricks = new List<Transform>();
 	private Rect[] spawnGrid;
-//	private Rect spawnArea;
 	public Texture2D texture;
 	private GUIStyle style = new GUIStyle();
 	private Vector2 randomSpawn, organizedSpawn;
@@ -33,12 +32,14 @@ public class Master : MonoBehaviour {
     
     public List<Renderer> brickRenderers = new List<Renderer>(); //used for color outlines
     public List<int> brickInt = new List<int>(); //also used for color outlines
-    //public List<BrickData> brickData = new List<BrickData>();
     public bool newSpawn = false;
     int index = 0;
 
-
 	public Material[] outlineMats;
+
+	//Hotkey Power Variables
+	int currentSelection = 0;
+	Powers[] powersToUse = new Powers[] {new Powers("Chaos"), new Powers("Sniper"), new Powers("Chaos")};
 
 	//Power Bar Variables
 	public float energy, maxEnergy = 100.0f;
@@ -59,6 +60,7 @@ public class Master : MonoBehaviour {
 	public bool ballInPlay = false;
 
 	//snipe skill variables
+	float snipeTime = 0f;
 	Powers activeSkill = new Powers();
 	public bool isSniping = false;
 	List<GameObject> snipedBricks = new List<GameObject>();
@@ -86,18 +88,23 @@ public class Master : MonoBehaviour {
 		chaosCost = 15.0f;
 		powerBar.maxValue = maxEnergy;
 		texture = new Texture2D((int) bricks[0].GetComponent<SpriteRenderer>().sprite.textureRect.width, (int) bricks[0].GetComponent<SpriteRenderer>().sprite.textureRect.height);
-		//texture = new Texture2D((int)bricks[0].GetComponent<SpriteRenderer>().sprite.textureRect.width, (int)bricks[0].GetComponent<SpriteRenderer>().sprite.textureRect.height);
-		//spawnArea = new Rect (Camera.main.pixelRect.position, new Vector2(Camera.main.pixelWidth, Camera.main.pixelHeight/2));
 
 		SpawnNewBricks();
 
-		activeSkill.SetSkillLevel(2);
-		activeSkill.SetSkillCost(10);
-		//ParentBricks();
+		//activeSkill.SetSkillLevel(2);
+		//activeSkill.SetSkillCost(10);
 	}
 	
 	void Update()
 	{
+		//Hotkey Functionality
+		if(Input.GetKeyDown(KeyCode.Alpha1) && !isSniping)
+			currentSelection = 0;
+		else if(Input.GetKeyDown(KeyCode.Alpha2) && !isSniping)
+			currentSelection = 1;
+		else if(Input.GetKeyDown(KeyCode.Alpha3) && !isSniping)
+			currentSelection = 2;
+
 		if(Time.timeSinceLevelLoad >= nextSpawn)
 		{
 			MoveBricks();
@@ -107,8 +114,16 @@ public class Master : MonoBehaviour {
 		if(gameOver)
 			GameOver();
 
-		if(Input.GetKeyDown(KeyCode.Mouse1) && ballInPlay && energy >= chaosCost)
-			ChaosBall();
+		//if(Input.GetKeyDown(KeyCode.Mouse1) && ballInPlay && energy >= chaosCost)
+		if(Input.GetKeyDown(KeyCode.Mouse1) && ballInPlay)
+			UsePower(currentSelection);
+
+		if(isSniping && Time.realtimeSinceStartup > snipeTime)
+		{
+			Time.timeScale = 1f;
+			snipedBricks.Clear(); // clear the selected bricks list
+			isSniping = false;
+		}
 
 		/*
 		 * switch (selectedSkill)
@@ -133,92 +148,15 @@ public class Master : MonoBehaviour {
 		if(energy > maxEnergy)
 			energy = maxEnergy;
 
-		if(Input.GetKeyDown(KeyCode.Space) && ballInPlay && !isSniping)
-			SniperPower();
-		else if(Input.GetKeyDown(KeyCode.Space) && ballInPlay && isSniping)
-		{
-			if(snipedBricks.Count > 0) //Destroy bricks if there are any added
-			{
-				for(int i = 0; i < snipedBricks.Count; i++)
-				{
-					RemoveBrick(snipedBricks[i].transform);
-					Destroy(snipedBricks[i]);
-				}
-				snipedBricks.Clear();
-			}
-			isSniping = false;
-			Time.timeScale = 1;
-		}
+		//if(Input.GetKeyDown(KeyCode.Space) && ballInPlay && !isSniping)
+		//	SniperPower();
+		
 
 	}
 
 	void OnGUI()
 	{
 		powerBar.value = energy;
-		//if(powerBar.value == 0)
-		//	powerBar.fillRect.gameObject.SetActive(false);
-		/*for(int i = 0; i < brickRenderers.Count; i++)
-		{
-			switch(spawnedBricks[i].GetComponent<BrickScript>().GetHP())
-			{
-			case 1:
-				for ( int a = 0; a < bricks[0].GetComponent<SpriteRenderer>().bounds.size.x; a++)
-				{
-					for ( int b = 0; b < bricks[0].GetComponent<SpriteRenderer>().bounds.size.y; b++)
-					{
-						Debug.Log((int) spawnedBricks[i].GetComponent<SpriteRenderer>().bounds.min.x + a);
-						Debug.Log((int) spawnedBricks[i].GetComponent<SpriteRenderer>().bounds.min.y + b);
-						texture.SetPixel((int) spawnedBricks[i].GetComponent<SpriteRenderer>().bounds.min.x + a, 
-										 (int) spawnedBricks[i].GetComponent<SpriteRenderer>().bounds.min.y + b, Color.green);
-					}
-				}
-				texture.Apply();
-				style.normal.background = texture;
-				GUI.Box(spawnGrid[i], texture, style);
-				break;
-			case 2:
-				for ( int a = 0; a < bricks[0].GetComponent<SpriteRenderer>().bounds.size.x; a++)
-				{
-					for ( int b = 0; b < bricks[0].GetComponent<SpriteRenderer>().bounds.size.y; b++)
-					{
-						texture.SetPixel(a, b, Color.yellow);
-					}
-				}
-				texture.Apply();
-				style.normal.background = texture;
-				GUI.Box(spawnGrid[i], texture, style);
-				break;
-			case 3:
-				for ( int a = 0; a < bricks[0].GetComponent<SpriteRenderer>().bounds.size.x; a++)
-				{
-					for ( int b = 0; b < bricks[0].GetComponent<SpriteRenderer>().bounds.size.y; b++)
-					{
-						texture.SetPixel(a, b, Color.red);
-					}
-				}
-				texture.Apply();
-				style.normal.background = texture;
-				GUI.Box(spawnGrid[i], texture, style);
-				break;
-			}
-
-		}*/
-		//texture.SetPixel(512, 512, Color.green);
-
-			
-		//texture.Apply();
-	//	style.normal.background = texture;
-		//GUI.Box(new Rect(0, 0, 512, 512), texture, style);
-		/*for(int i = 0; i < spawnedBricks.Count; i++)
-		{
-			//GUI.Box(spawnGrid[i], texture);
-			DrawQuad(new Rect(spawnedBricks[i].position.x, spawnedBricks[i].position.y, brickRenderers[i].bounds.size.x, brickRenderers[i].bounds.size.y), Color.green);
-		}
-*/
-		//for (int c = 0; c < spawnGrid.Length; c++) {
-		//	GUI.Box (spawnGrid [c], texture, style);
-			//DrawQuad(spawnGrid[c], Color.green);
-		//}
 	}
 
 	//Move bricks down by a row
@@ -246,137 +184,90 @@ public class Master : MonoBehaviour {
 			{
 				spawnGrid[b] = new Rect(new Vector2(spawnRect.position.x + columnSpace, lastRect.position.y - brickRender.bounds.size.y - rowSpace), 
 					new Vector2(brickRender.bounds.size.x, brickRender.bounds.size.y));
-				//Debug.Log("Max Reached. Make New Row");
 			}
 			else if(lastRect.position.x + brickRender.bounds.size.x < Camera.main.ScreenToWorldPoint(Camera.main.pixelRect.max).x)
 			{
 				spawnGrid[b] = new Rect(new Vector2(lastRect.position.x + brickRender.bounds.size.x + columnSpace, lastRect.position.y), 
 					new Vector2(brickRender.bounds.size.x, brickRender.bounds.size.y));
-				//Debug.Log ("Not Hitting Max");
 			}
 			lastRect = spawnGrid[b];
 		}
-		//Debug.Log (spawnRect.position);
-		//Debug.Log (spawnRect.max);
 
 		//Instanttiate New Bricks
 		for(int i = 0; i < numberOfBricks; i++)
 		{
-            //int outlineColor = UnityEngine.Random.Range(1, 3);
-            //int hp = UnityEngine.Random.Range(1, 4);
-			//Transform newBrick = Instantiate(bricks[UnityEngine.Random.Range (0, bricks.Length)], randomSpawn, Quaternion.identity) as Transform;
-            
 			spawnedBricks.Add(Instantiate(bricks[UnityEngine.Random.Range (0, bricks.Length)], spawnGrid[i].position, Quaternion.identity) as Transform);
-			//spawnedBricks[i].gameObject.layer = LayerMask.NameToLayer("Default");
-          //  spawnedBricks[index].GetComponent<BrickScript>().SetIndex(index);
-           // brickData.Add(new BrickData(outlineColor, Instantiate(bricks[UnityEngine.Random.Range(0, bricks.Length)], spawnGrid[i].position, Quaternion.identity) as Transform));
-          //  brickRenderers.Add(spawnedBricks[index].GetComponent<Renderer>());
-           // spawnedBricks[index].GetComponent<BrickScript>().SetHP(hp);
-           // brickInt.Add(spawnedBricks[index].GetComponent<BrickScript>().GetHP());
-
-
             index = spawnedBricks.Count;
-			/*if(spawnedBricks[i].position.x < Camera.main.pixelRect.xMax){
-				//Debug.Log("True");
-				spawnRect = new Rect (new Vector2(newBrick.GetComponent<SpriteRenderer>().bounds.max.x + newBrick.GetComponent<SpriteRenderer>().bounds.extents.x,
-			                                 	  newBrick.GetComponent<SpriteRenderer>().bounds.max.y - newBrick.GetComponent<SpriteRenderer>().bounds.extents.y),
-			                     	 			  newBrick.GetComponent<SpriteRenderer>().bounds.size);
-			}*/
-			/*else if(spawnedBricks[i].position.x > Camera.main.pixelRect.xMax){
-			Debug.Log("Not True");
-			spawnRect = new Rect (new Vector2((Camera.main.orthographicSize * Screen.width/Screen.height)*-1 + bricks[0].GetComponent<SpriteRenderer>().bounds.extents.x, 
-				Camera.main.orthographicSize - (bricks[0].GetComponent<SpriteRenderer>().bounds.extents.y * 2)),
-				new Vector2(bricks[0].GetComponent<SpriteRenderer>().bounds.size.x,
-					bricks[0].GetComponent<SpriteRenderer>().bounds.size.y));
-		}*/
 		}
 		
 		nextSpawn = Time.timeSinceLevelLoad + spawnTime;
         newSpawn = true;
-		
-		//Parent all the new bricks to the Master Object
-		//for (int i = 0; i < spawnedBricks.Count; i++)
-		//{
-		//	if(spawnedBricks[i].parent == null)
-		//		spawnedBricks[i].parent = transform;
-		//}
+	}
 
-		/*for(int i = 0; i < numberOfBricks; i++)
+	void UsePower(int index)
+	{
+		switch(powersToUse[index].GetName())
 		{
-			randomSpawn = new Vector2(UnityEngine.Random.Range(Camera.main.orthographicSize * Screen.width/ Screen.height, 
-				(Camera.main.orthographicSize * Screen.width/Screen.height) * -1),
-				UnityEngine.Random.Range (0, Camera.main.orthographicSize));
-			organizedSpawn = new Vector2(spawnRect.x, spawnRect.y);
-			//Transform newBrick = Instantiate(bricks[UnityEngine.Random.Range (0, bricks.Length)], randomSpawn, Quaternion.identity) as Transform;
-			Transform newBrick = Instantiate(bricks[UnityEngine.Random.Range (0, bricks.Length)], spawnGrid[i].position, Quaternion.identity) as Transform;
-			newBrick.SetParent(gameObject.transform);
-
-			spawnedBricks.Add(newBrick);
-			/*if(spawnedBricks[i].position.x < Camera.main.pixelRect.xMax){
-					//Debug.Log("True");
-					spawnRect = new Rect (new Vector2(newBrick.GetComponent<SpriteRenderer>().bounds.max.x + newBrick.GetComponent<SpriteRenderer>().bounds.extents.x,
-				                                 	  newBrick.GetComponent<SpriteRenderer>().bounds.max.y - newBrick.GetComponent<SpriteRenderer>().bounds.extents.y),
-				                     	 			  newBrick.GetComponent<SpriteRenderer>().bounds.size);
-				}*/
-			/*else if(spawnedBricks[i].position.x > Camera.main.pixelRect.xMax){
-			Debug.Log("Not True");
-			spawnRect = new Rect (new Vector2((Camera.main.orthographicSize * Screen.width/Screen.height)*-1 + bricks[0].GetComponent<SpriteRenderer>().bounds.extents.x, 
-				Camera.main.orthographicSize - (bricks[0].GetComponent<SpriteRenderer>().bounds.extents.y * 2)),
-				new Vector2(bricks[0].GetComponent<SpriteRenderer>().bounds.size.x,
-					bricks[0].GetComponent<SpriteRenderer>().bounds.size.y));
+		case "Chaos":
+			ChaosBall();
+			break;
+		case "Sniper":
+			SniperPower();
+			break;
+		default:
+			break;
 		}
-		}*/
-		//texture.wrapMode = TextureWrapMode.Repeat;
-		//texture.Apply ();
-		//style = new GUIStyle ();
-		//style.normal.background = texture;
-
-		/*for (int i = 0; i < spawnedBricks.Count; i++){
-					SpriteRenderer currentRenderer = spawnedBricks[i].GetComponent<SpriteRenderer>();
-					for(int a = 0; a < spawnedBricks.Count; a++){
-						if(spawnedBricks[i] == spawnedBricks[a]){
-							continue;
-						}
-						SpriteRenderer subRenderer = spawnedBricks[a].GetComponent<SpriteRenderer>();
-						if(currentRenderer.bounds.Intersects(subRenderer.bounds)){
-							Debug.Log("spawnedBricks " + i + " Intersects " + "spawnedBricks " + a);
-							spawnedBricks[i].position = new Vector2(UnityEngine.Random.Range(Camera.main.orthographicSize * Screen.width/ Screen.height, 
-							                                                     (Camera.main.orthographicSize * Screen.width/Screen.height) * -1),
-							                                        UnityEngine.Random.Range (Camera.main.orthographicSize/2, Camera.main.orthographicSize));
-							a = 0;
-						}
-					}
-				}*/
 	}
 
 	void ChaosBall()
 	{
-		energy -= chaosCost;
-		for(int i = 0; i < numToSpawn; i++)
+		if(energy >= powersToUse[currentSelection].GetSkillCost() && Time.timeSinceLevelLoad > powersToUse[currentSelection].GetCooldownTime())
 		{
-			spawnedBalls[i] = (Rigidbody2D) Instantiate (spawnBall, ball.position, Quaternion.identity);
-			spawnedBalls[i].velocity = new Vector2(UnityEngine.Random.Range(-10, 10), UnityEngine.Random.Range(-10, 10));
-			//spawnedBalls[i].AddForce (new Vector2(UnityEngine.Random.Range(-10 * ballSpeed, 10 * ballSpeed), UnityEngine.Random.Range(-10 * ballSpeed, 10 * ballSpeed)), ForceMode2D.Impulse);
-			spawnedBalls[i].AddForce(spawnedBalls[i].velocity, ForceMode2D.Impulse);
-			
+			energy -= powersToUse[currentSelection].GetSkillCost();
+			for(int i = 0; i < powersToUse[currentSelection].GetSkillLevel(); i++)
+			{
+				spawnedBalls[i] = (Rigidbody2D) Instantiate (spawnBall, ball.position, Quaternion.identity);
+				spawnedBalls[i].velocity = new Vector2(UnityEngine.Random.Range(-20, 20), ball.velocity.y);		
+			}
+			powersToUse[currentSelection].StartCooldown();
 		}
 	}
 
 	void SniperPower()
 	{
-		isSniping = true;
-		energy -= activeSkill.GetSkillCost();
-		Time.timeScale = 0;
+		if(isSniping)
+		{
+			//Debug.Log("True");
+			if(snipedBricks.Count > 0) //Destroy bricks if there are any added
+			{
+				for(int i = 0; i < snipedBricks.Count; i++)
+				{
+					RemoveBrick(snipedBricks[i].transform);
+					Destroy(snipedBricks[i]);
+				}
+				snipedBricks.Clear();
+			}
+			Time.timeScale = 1;
+			isSniping = false;
+		}
+
+		if(energy >= powersToUse[currentSelection].GetSkillCost() && !isSniping && Time.timeSinceLevelLoad > powersToUse[currentSelection].GetCooldownTime())
+		{
+			Time.timeScale = 0;
+			energy -= powersToUse[currentSelection].GetSkillCost();
+			snipeTime = Time.realtimeSinceStartup + 5.0f;
+			powersToUse[currentSelection].StartCooldown();
+			isSniping = true;
+		}
 	}
 
 	public void SetBricksToSnipe(GameObject brick)
 	{
-		//activeSkill.GetSkillLevel();
-		if(!snipedBricks.Contains(brick) && snipedBricks.Count < activeSkill.GetSkillLevel())
+		if(!snipedBricks.Contains(brick) && snipedBricks.Count < powersToUse[currentSelection].GetSkillLevel())
 		{
 			snipedBricks.Add(brick);
 		}
-		Debug.Log(snipedBricks.Count);
+		//Debug.Log(snipedBricks.Count);
 	}
 
 	public bool GetBrickToSnipe(GameObject brick)
@@ -393,21 +284,8 @@ public class Master : MonoBehaviour {
     //Remove Bricks from List when they're destroyed
     public void RemoveBrick(Transform brickToDestroy)
 	{
-       // int index = spawnedBricks.FindIndex(brickToDestroy);
 		spawnedBricks.Remove(brickToDestroy);
-       // brickRenderers.Remove(brickToDestroy.GetComponent<Renderer>());
-       // brickRenderers.Remove(brickToDestroyRenderer);
-       // brickInt.RemoveAt(brickIndex);
 	}
-
-   /* public void RemoveBrick(int brickIndex)
-    {
-        // int index = spawnedBricks.FindIndex(brickToDestroy);
-        spawnedBricks.RemoveAt(brickIndex);
-        brickRenderers.RemoveAt(brickIndex);
-        // brickRenderers.Remove(brickToDestroyRenderer);
-        brickInt.RemoveAt(brickIndex);
-    }*/
 
     void GameOver()
 	{
@@ -430,14 +308,14 @@ public class Master : MonoBehaviour {
 
 		Powers data = new Powers();
 		
-		switch(skillName)
+		/*switch(skillName)
 		{
 			case "ChaosBall":
 				data.SetSkillCost(10);
 				data.SetSkillLevel(1);
-				data.SetSprite(Resources.Load("ChaosBallIcon") as Sprite);
+				data.SetImage(Resources.Load("ChaosBallIcon") as Sprite);
 				break;
-		}
+		}*/
 
 		bf.Serialize(file, data);
 		file.Close();
@@ -454,8 +332,18 @@ public class Master : MonoBehaviour {
 
 			data.GetSkillCost();
 			data.GetSkillLevel();
-			data.GetSprite();
+			data.GetIconPath();
 		}
+	}
+
+	public int GetCurrentHotkey()
+	{
+		return currentSelection;
+	}
+
+	public Sprite GetSkillIcons(int num)
+	{
+		return Resources.Load<Sprite>( powersToUse[num].GetIconPath());
 	}
 }
 
@@ -465,7 +353,34 @@ class Powers {
 	//Need to think this through.
 	float skillCost;
 	int skillLevel;
-	Sprite skillIcon;
+	string skillIconPath;
+	String name;
+	float cooldownTime, timeOnCooldown;
+
+	public Powers()
+	{
+	}
+
+	public Powers(String powerName)
+	{
+		switch(powerName)
+		{
+		case "Chaos":
+			name = "Chaos";
+			skillCost = 10;
+			skillLevel = 1;
+			cooldownTime = 4.0f;
+			skillIconPath = "HotkeyIcons/ChaosBall";
+			break;
+		case "Sniper":
+			name = "Sniper";
+			skillCost = 15;
+			skillLevel = 1;
+			cooldownTime = 8.0f;
+			skillIconPath = "HotkeyIcons/SniperBall";
+			break;
+		}
+	}
 	//skillIcon = Resources.Load ("ChaosBallIcon");
 	//int numberOfBalls = skillLevel + 1?
 	public float GetSkillCost()
@@ -488,23 +403,36 @@ class Powers {
 		skillLevel = level;
 	}
 
-	public Sprite GetSprite()
+	public String GetIconPath()
 	{
-		return skillIcon;
+		return skillIconPath;
 	}
 
-	public void SetSprite(Sprite spriteToUse)
+	public void SetIconPath(string pathToUse)
 	{
-		skillIcon = spriteToUse;
+		skillIconPath = pathToUse;
 	}
 
-	//public Powers (string name)
-	//{
-		//switch(name)
-		//{
-		//case "ChaosBall":
-			
-		//	break;
-		//}
-	//}
+	public void LevelUp()
+	{
+		skillLevel++;
+		skillCost = skillCost * (skillLevel * 0.5f);
+	}
+
+	public String GetName()
+	{
+		return name;
+	}
+
+	public float GetCooldownTime()
+	{
+		return timeOnCooldown;
+	}
+
+	public void StartCooldown()
+	{
+		timeOnCooldown = Time.timeSinceLevelLoad + cooldownTime;
+	}
+
+
 }

@@ -51,6 +51,10 @@ public class BrickScript : MonoBehaviour
                 outlineInt = 3;
 				renderer.material = Master.instance.outlineMats[2];
                 break;
+			default:
+				Master.instance.RemoveBrick(transform);
+				Destroy(gameObject);
+				break;
         }
         
         if (transform.position.y <= Master.instance.paddle.position.y)
@@ -59,6 +63,9 @@ public class BrickScript : MonoBehaviour
 		if(Master.instance.GetBrickToSnipe(gameObject)) //Find out if the brick is selected to be sniped. If so, highlight it
 			sniperHighlight.gameObject.SetActive(true);
 		else
+			sniperHighlight.gameObject.SetActive(false);
+
+		if(!Master.instance.isSniping)
 			sniperHighlight.gameObject.SetActive(false);
 
 	//	if(Master.instance.isSniping && Input.GetMouseButtonUp(0))
