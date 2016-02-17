@@ -301,6 +301,24 @@ public class Master : MonoBehaviour {
         }
     }
 
+	public float GetCooldownTime(int index)
+	{
+		switch(index)
+		{
+		case 0:
+			return powersToUse[0].GetCooldownTime();
+			break;
+		case 1:
+			return powersToUse[1].GetCooldownTime();
+			break;
+		case 2:
+			return powersToUse[2].GetCooldownTime();
+			break;
+		}
+
+		return 0f;
+	}
+
 	public void SaveData(String skillName)
 	{
 		BinaryFormatter bf = new BinaryFormatter();
