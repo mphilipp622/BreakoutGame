@@ -14,12 +14,16 @@ public class BrickScript : MonoBehaviour
 	//LineRenderer outline;
 	SpriteRenderer renderer;
 	Transform sniperHighlight;
+	Collider2D[] colliders;
 
     void Start()
     {
 		renderer = GetComponent<SpriteRenderer>();
 		sniperHighlight = transform.GetChild(0);
 		sniperHighlight.gameObject.SetActive(false);
+		colliders = GetComponents<Collider2D>();
+		Debug.Log(colliders[0].isTrigger);
+		Debug.Log(colliders[1].isTrigger);
 		/*outline = GetComponent<LineRenderer>();
 		outline.SetWidth(GetComponent<SpriteRenderer>().bounds.extents.y * 2, GetComponent<SpriteRenderer>().bounds.extents.y * 2);
 		outline.SetPosition(0, new Vector3(GetComponent<SpriteRenderer>().bounds.min.x, transform.position.y, -1.0f));
@@ -68,6 +72,16 @@ public class BrickScript : MonoBehaviour
 		if(!Master.instance.isSniping)
 			sniperHighlight.gameObject.SetActive(false);
 
+		if(Master.instance.isWrecking)
+		{
+			colliders[0].enabled = false;
+			colliders[1].enabled = true;
+		}
+		else
+		{
+			colliders[0].enabled = true;
+			colliders[1].enabled = false;
+		}
 	//	if(Master.instance.isSniping && Input.GetMouseButtonUp(0))
 	//		Master.instance.RemoveBricksToSnipe(gameObject);
 
@@ -83,6 +97,11 @@ public class BrickScript : MonoBehaviour
     {
         hp--;
     }
+
+	void OnTriggerEnter2D(Collider2D collider)
+	{
+		Destroy(gameObject);
+	}
 
     public int GetHP()
     {

@@ -39,7 +39,7 @@ public class Master : MonoBehaviour {
 
 	//Hotkey Power Variables
 	int currentSelection = 0;
-	Powers[] powersToUse = new Powers[] {new Powers("Chaos"), new Powers("Sniper"), new Powers("Chaos")};
+	Powers[] powersToUse = new Powers[] {new Powers("Chaos"), new Powers("Sniper"), new Powers("WreckingBall")};
 
 	//Power Bar Variables
 	public float energy, maxEnergy = 100.0f;
@@ -64,6 +64,10 @@ public class Master : MonoBehaviour {
 	Powers activeSkill = new Powers();
 	public bool isSniping = false;
 	List<GameObject> snipedBricks = new List<GameObject>();
+
+	//Wrecking Ball variables
+	float wreckingTime = 0f;
+	public bool isWrecking = false;
 
 	void Awake()
 	{
@@ -123,6 +127,12 @@ public class Master : MonoBehaviour {
 			Time.timeScale = 1f;
 			snipedBricks.Clear(); // clear the selected bricks list
 			isSniping = false;
+		}
+
+		if(isWrecking && Time.realtimeSinceStartup > wreckingTime)
+		{
+			Time.timeScale = 1f;
+			isWrecking = false;
 		}
 
 		/*
@@ -214,6 +224,9 @@ public class Master : MonoBehaviour {
 		case "Sniper":
 			SniperPower();
 			break;
+		case "WreckingBall":
+			WreckingBall();
+			break;
 		default:
 			break;
 		}
@@ -258,6 +271,24 @@ public class Master : MonoBehaviour {
 			snipeTime = Time.realtimeSinceStartup + 5.0f;
 			powersToUse[currentSelection].StartCooldown();
 			isSniping = true;
+		}
+	}
+
+	void WreckingBall()
+	{
+		if(isWrecking)
+		{
+			Time.timeScale = 1;
+			isWrecking = false;
+		}
+
+		if(energy >= powersToUse[currentSelection].GetSkillCost() && !isWrecking && Time.timeSinceLevelLoad > powersToUse[currentSelection].GetCooldownTime())
+		{
+			Time.timeScale = 0;
+			energy -= powersToUse[currentSelection].GetSkillCost();
+			wreckingTime = Time.realtimeSinceStartup + 3.0f;
+			powersToUse[currentSelection].StartCooldown();
+			isWrecking = true;
 		}
 	}
 
@@ -396,6 +427,13 @@ class Powers {
 			skillLevel = 1;
 			cooldownTime = 8.0f;
 			skillIconPath = "HotkeyIcons/SniperBall";
+			break;
+		case "WreckingBall":
+			name = "WreckingBall";
+			skillCost = 20;
+			skillLevel = 1;
+			cooldownTime = 6.0f;
+			skillIconPath = "HotkeyIcons/WreckingBall";
 			break;
 		}
 	}
