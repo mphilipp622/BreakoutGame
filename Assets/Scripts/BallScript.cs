@@ -8,12 +8,13 @@ public class BallScript : MonoBehaviour {
 	float min_y_velocity = 5.0f;
 	float min_x_velocity = 5.0f;
 	Material ballMat;
+	Light spotlight;
 
 	void Start () 
 	{
 		ball = GetComponent<Rigidbody2D> ();
 		ballMat = GetComponent<SpriteRenderer>().material;
-
+		spotlight = GetComponentInChildren<Light>();
 	}
 
 	void Update () 
@@ -65,6 +66,26 @@ public class BallScript : MonoBehaviour {
 			else if(ball.velocity.y < 0 && ball.velocity.x < 0)
 				ballMat.SetTextureOffset("_MKGlowTex", new Vector2(-Time.timeSinceLevelLoad, -Time.timeSinceLevelLoad));
 		}
+
+		//Change layer collision matrix when wrecking ball is active. Make sure ball only hits Trigger colliders on the bricks so that the ball can pass through
+		//bricks without stopping.
+		if(Master.instance.wreckingDamage > 0)
+		{
+			Physics2D.IgnoreLayerCollision(8, 10, true);
+			Physics2D.IgnoreLayerCollision(8, 11, false);
+		}
+		else
+		{
+			Physics2D.IgnoreLayerCollision(8, 10, false);
+			Physics2D.IgnoreLayerCollision(8, 11, true);
+		}
+
+		if(Master.instance.isWrecking)
+			spotlight.intensity = Master.instance.wreckingStacks;
+		else
+			spotlight.intensity = (float)Master.instance.wreckingDamage;
+			
+
 	}
 
 	/*void OnCollisionEnter2D (Collision2D collision){

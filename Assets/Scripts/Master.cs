@@ -68,6 +68,8 @@ public class Master : MonoBehaviour {
 	//Wrecking Ball variables
 	float wreckingTime = 0f;
 	public bool isWrecking = false;
+	public int wreckingDamage = 0;
+	public float wreckingStacks = 0f;
 
 	void Awake()
 	{
@@ -102,11 +104,11 @@ public class Master : MonoBehaviour {
 	void Update()
 	{
 		//Hotkey Functionality
-		if(Input.GetKeyDown(KeyCode.Alpha1) && !isSniping)
+		if(Input.GetKeyDown(KeyCode.Alpha1) && !isSniping && !isWrecking)
 			currentSelection = 0;
-		else if(Input.GetKeyDown(KeyCode.Alpha2) && !isSniping)
+		else if(Input.GetKeyDown(KeyCode.Alpha2) && !isSniping && !isWrecking)
 			currentSelection = 1;
-		else if(Input.GetKeyDown(KeyCode.Alpha3) && !isSniping)
+		else if(Input.GetKeyDown(KeyCode.Alpha3) && !isSniping && !isWrecking)
 			currentSelection = 2;
 
 		if(Time.timeSinceLevelLoad >= nextSpawn)
@@ -129,12 +131,29 @@ public class Master : MonoBehaviour {
 			isSniping = false;
 		}
 
+		//Used for Mousewheel mini game. If we have exceeded our time limit for the minigame, resume play. Otherwise, allow mousewheel input to dictate wreckingDamage.
 		if(isWrecking && Time.realtimeSinceStartup > wreckingTime)
 		{
+			wreckingDamage = (int)wreckingStacks; //take the stacks generated from mousewheel minigame and assign them to wreckingDamage. Decimal gets truncated during cast.
 			Time.timeScale = 1f;
 			isWrecking = false;
 		}
-
+		else if(isWrecking && Time.realtimeSinceStartup < wreckingTime && wreckingStacks < powersToUse[currentSelection].GetSkillLevel())
+		{
+			if(Input.GetAxis("Mouse ScrollWheel") > 0f)
+				wreckingStacks += Input.GetAxis("Mouse ScrollWheel") * (powersToUse[currentSelection].GetSkillLevel() * 0.15f);
+				//wreckingStacks += Input.GetAxis("Mouse ScrollWheel") / (powersToUse[currentSelection].GetSkillLevel());
+			else if(Input.GetAxis("Mouse ScrollWheel") < 0f)
+				//Add to wreckingStacks by multiplying the negative axis movement by -1 to create a positive result.
+				wreckingStacks += -1 * (Input.GetAxis("Mouse ScrollWheel")) * (powersToUse[currentSelection].GetSkillLevel() * .15f);
+				//wreckingStacks += -1 * (Input.GetAxis("Mouse ScrollWheel") / (powersToUse[currentSelection].GetSkillLevel()));
+		}
+			
+		/*if(isWrecking && wreckingDamage == 0)
+			isWrecking = false;
+		else if(isWrecking && wreckingDamage > 0)
+			isWrecking = true;
+*/
 		/*
 		 * switch (selectedSkill)
 		 * case chaosBall: 
@@ -248,7 +267,7 @@ public class Master : MonoBehaviour {
 
 	void SniperPower()
 	{
-		if(isSniping)
+		if(isSniping && Time.timeScale == 0)
 		{
 			//Debug.Log("True");
 			if(snipedBricks.Count > 0) //Destroy bricks if there are any added
@@ -276,11 +295,15 @@ public class Master : MonoBehaviour {
 
 	void WreckingBall()
 	{
-		if(isWrecking)
+		/*
+		//Use this is player is in Wrecking Ball pause state and presses right-click again.
+		if(isWrecking && Time.timeScale == 0)
 		{
+			wreckingDamage = 0;
 			Time.timeScale = 1;
 			isWrecking = false;
 		}
+		*/
 
 		if(energy >= powersToUse[currentSelection].GetSkillCost() && !isWrecking && Time.timeSinceLevelLoad > powersToUse[currentSelection].GetCooldownTime())
 		{
@@ -288,12 +311,14 @@ public class Master : MonoBehaviour {
 			energy -= powersToUse[currentSelection].GetSkillCost();
 			wreckingTime = Time.realtimeSinceStartup + 3.0f;
 			powersToUse[currentSelection].StartCooldown();
+			wreckingStacks = 0f;
 			isWrecking = true;
 		}
 	}
 
 	public void SetBricksToSnipe(GameObject brick)
 	{
+		//This is how many bricks we can snipe
 		if(!snipedBricks.Contains(brick) && snipedBricks.Count < powersToUse[currentSelection].GetSkillLevel())
 		{
 			snipedBricks.Add(brick);
@@ -431,7 +456,7 @@ class Powers {
 		case "WreckingBall":
 			name = "WreckingBall";
 			skillCost = 20;
-			skillLevel = 1;
+			skillLevel = 6; //CHANGE THIS WHEN FINALIZING
 			cooldownTime = 6.0f;
 			skillIconPath = "HotkeyIcons/WreckingBall";
 			break;
