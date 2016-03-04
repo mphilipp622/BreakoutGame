@@ -20,6 +20,7 @@ public class BrickScript : MonoBehaviour
 		renderer = GetComponent<SpriteRenderer>();
 		sniperHighlight = transform.GetChild(0);
 		wreckingBallTrigger = transform.GetChild(1);
+		//wreckingBallTrigger = transform.FindChild("WreckingBallTrigger");
 		sniperHighlight.gameObject.SetActive(false); //Disable the highlighter child. Only used when sniping.
 		/*outline = GetComponent<LineRenderer>();
 		outline.SetWidth(GetComponent<SpriteRenderer>().bounds.extents.y * 2, GetComponent<SpriteRenderer>().bounds.extents.y * 2);
@@ -69,7 +70,8 @@ public class BrickScript : MonoBehaviour
 		if(!Master.instance.isSniping)
 		{
 			sniperHighlight.gameObject.SetActive(false);
-			wreckingBallTrigger.gameObject.SetActive(true);
+			if(!wreckingBallTrigger.gameObject.activeSelf)
+				wreckingBallTrigger.gameObject.SetActive(true);
 		}
 		else
 			wreckingBallTrigger.gameObject.SetActive(false);

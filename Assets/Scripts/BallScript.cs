@@ -14,7 +14,12 @@ public class BallScript : MonoBehaviour {
 	{
 		ball = GetComponent<Rigidbody2D> ();
 		ballMat = GetComponent<SpriteRenderer>().material;
-		spotlight = GetComponentInChildren<Light>();
+
+		//Assign spotlight only if our object is the main ball. Spotlight does not exist on dupeball
+		if(gameObject.tag == "Ball")
+			spotlight = GetComponentInChildren<Light>();
+		else if(gameObject.tag == "DupeBall")
+			spotlight = null;
 	}
 
 	void Update () 
@@ -80,9 +85,10 @@ public class BallScript : MonoBehaviour {
 			Physics2D.IgnoreLayerCollision(8, 11, true);
 		}
 
-		if(Master.instance.isWrecking)
+		//Change spotlight intensity so ball looks red based on wreckingStacks variable in Master.
+		if(Master.instance.isWrecking && spotlight != null)
 			spotlight.intensity = Master.instance.wreckingStacks;
-		else
+		else if(!Master.instance.isWrecking && spotlight != null)
 			spotlight.intensity = (float)Master.instance.wreckingDamage;
 			
 
