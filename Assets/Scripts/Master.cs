@@ -39,7 +39,7 @@ public class Master : MonoBehaviour {
 
 	//Hotkey Power Variables
 	int currentSelection = 0;
-	Powers[] powersToUse = new Powers[] {new Powers("Chaos"), new Powers("Sniper"), new Powers("WreckingBall")};
+	Powers[] powersToUse = new Powers[] {new Powers("Chaos"), new Powers("Sniper"), new Powers("Stretch")};
 
 	//Power Bar Variables
 	public float energy, maxEnergy = 100.0f;
@@ -71,6 +71,12 @@ public class Master : MonoBehaviour {
 	public int wreckingDamage = 0;
 	public float wreckingStacks = 0f;
 
+	//Stretch Paddle variables
+	public bool isStretched = false;
+	float stretchTime;
+	Vector3 originalScale;
+	Animator paddleAnimator;
+
 	void Awake()
 	{
 		if (instance == null)
@@ -85,6 +91,8 @@ public class Master : MonoBehaviour {
 		ballSpeed = ball.GetComponent<BallScript>().ballSpeedMultiplier;
 		spawnedBalls = new Rigidbody2D[numToSpawn];
 		paddle = GameObject.Find("Paddle").transform;
+		paddleAnimator = paddle.GetComponent<Animator>();
+		originalScale = paddle.localScale;
 		spawnedBricks = new List<Transform>();
 		brickRender = bricks [0].GetComponent<SpriteRenderer> ();
 		spawnGrid = new Rect[numberOfBricks];
@@ -94,6 +102,7 @@ public class Master : MonoBehaviour {
 		chaosCost = 15.0f;
 		powerBar.maxValue = maxEnergy;
 		texture = new Texture2D((int) bricks[0].GetComponent<SpriteRenderer>().sprite.textureRect.width, (int) bricks[0].GetComponent<SpriteRenderer>().sprite.textureRect.height);
+
 
 		SpawnNewBricks();
 
@@ -111,7 +120,7 @@ public class Master : MonoBehaviour {
 		else if(Input.GetKeyDown(KeyCode.Alpha3) && !isSniping && !isWrecking)
 			currentSelection = 2;
 
-		if(Time.timeSinceLevelLoad >= nextSpawn)
+		if(Time.timeSinceLevelLoad >= nextSpawn && ballInPlay)
 		{
 			MoveBricks();
 			SpawnNewBricks();
@@ -147,6 +156,18 @@ public class Master : MonoBehaviour {
 				//Add to wreckingStacks by multiplying the negative axis movement by -1 to create a positive result.
 				wreckingStacks += -1 * (Input.GetAxis("Mouse ScrollWheel")) * (powersToUse[currentSelection].GetSkillLevel() * .15f);
 				//wreckingStacks += -1 * (Input.GetAxis("Mouse ScrollWheel") / (powersToUse[currentSelection].GetSkillLevel()));
+		}
+
+		//Monitor Stretch Time and reset paddle when it's done
+		if (isStretched && Time.timeSinceLevelLoad > stretchTime)
+		{
+			paddle.localScale = originalScale;
+			paddleAnimator.SetBool("threeSeconds", false);
+			isStretched = false;
+		}
+		else if(isStretched && Time.timeSinceLevelLoad >= stretchTime - 3.0f) //start flashing the paddle when 3 seconds remain to warn players
+		{
+			paddleAnimator.SetBool("threeSeconds", true);
 		}
 			
 		/*if(isWrecking && wreckingDamage == 0)
@@ -246,6 +267,9 @@ public class Master : MonoBehaviour {
 		case "WreckingBall":
 			WreckingBall();
 			break;
+		case "Stretch":
+			StretchPaddle();
+			break;
 		default:
 			break;
 		}
@@ -309,10 +333,21 @@ public class Master : MonoBehaviour {
 		{
 			Time.timeScale = 0;
 			energy -= powersToUse[currentSelection].GetSkillCost();
-			wreckingTime = Time.realtimeSinceStartup + 3.0f;
+			wreckingTime = Time.realtimeSinceStartup + 3.0f; //used for the timing window
 			powersToUse[currentSelection].StartCooldown();
 			wreckingStacks = 0f;
 			isWrecking = true;
+		}
+	}
+
+	void StretchPaddle()
+	{
+		if(energy >= powersToUse[currentSelection].GetSkillCost() && !isStretched && Time.timeSinceLevelLoad > powersToUse[currentSelection].GetCooldownTime())
+		{
+			paddle.localScale = new Vector3((powersToUse[currentSelection].GetSkillLevel() * 0.15f), paddle.localScale.y, paddle.localScale.z);
+			stretchTime = Time.timeSinceLevelLoad + (powersToUse[currentSelection].GetSkillLevel() / 1.5f);
+			powersToUse[currentSelection].StartCooldown();
+			isStretched = true;
 		}
 	}
 
@@ -373,6 +408,11 @@ public class Master : MonoBehaviour {
 		}
 
 		return 0f;
+	}
+
+	public Transform GetPaddle()
+	{
+		return paddle;
 	}
 
 	public void SaveData(String skillName)
@@ -460,6 +500,13 @@ class Powers {
 			cooldownTime = 6.0f;
 			skillIconPath = "HotkeyIcons/WreckingBall";
 			break;
+		case "Stretch":
+			name = "Stretch";
+			skillCost = 15;
+			skillLevel = 6;
+			cooldownTime = 8.0f;
+			skillIconPath = "HotkeyIcons/PaddleStretch";
+			break;
 		}
 	}
 	//skillIcon = Resources.Load ("ChaosBallIcon");
@@ -503,6 +550,11 @@ class Powers {
 	public String GetName()
 	{
 		return name;
+	}
+
+	public float GetBaseCooldown()
+	{
+		return cooldownTime;
 	}
 
 	public float GetCooldownTime()

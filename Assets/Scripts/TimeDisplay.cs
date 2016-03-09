@@ -13,5 +13,6 @@ public class TimeDisplay : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		time.text = Time.timeSinceLevelLoad.ToString();
+		//time.text = Time.realtimeSinceStartup.ToString();
 	}
 }

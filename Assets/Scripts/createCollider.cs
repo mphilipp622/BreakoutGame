@@ -2,13 +2,14 @@
 using System.Collections;
 
 public class createCollider : MonoBehaviour {
-	
+
 	private EdgeCollider2D boundaryCollider, gameOverTrigger;
 	public bool gameOver = false;
+	float horizontalExtent, vertExtent;
 	
 	void Start () {
-		float vertExtent = Camera.main.orthographicSize;
-		float horizontalExtent = Camera.main.orthographicSize * Screen.width / Screen.height;
+		vertExtent = Camera.main.orthographicSize;
+		horizontalExtent = Camera.main.orthographicSize * Screen.width / Screen.height;
 		boundaryCollider = gameObject.AddComponent<EdgeCollider2D> ();
 		boundaryCollider.points = new Vector2[] {new Vector2(-horizontalExtent, -vertExtent), new Vector2(-horizontalExtent, vertExtent)
 			, new Vector2(horizontalExtent, vertExtent), new Vector2(horizontalExtent, -vertExtent)};
