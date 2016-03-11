@@ -10,10 +10,12 @@ public class PaddleController : MonoBehaviour {
 	private SpriteRenderer sprite;
 	public bool hittingLeft, hittingRight;
 	private float horizontalCam;
+	Animator anim;
 
 	LineRenderer outline;
 
 	void Start () {
+		anim = GetComponent<Animator>();
 		sprite = GetComponent<SpriteRenderer> ();
 		spriteWidth = sprite.sprite.bounds.size.x * transform.localScale.x;
 		currentPosition = transform.position;
@@ -75,5 +77,11 @@ public class PaddleController : MonoBehaviour {
 	public void SetHittingRight()
 	{
 		hittingRight = true;
+	}
+
+	void OnCollisionEnter2D(Collision2D coll)
+	{
+		if(coll.gameObject.tag == "Energy")
+			anim.SetTrigger("GrabbedEnergy");
 	}
 }

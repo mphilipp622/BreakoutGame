@@ -39,7 +39,7 @@ public class Master : MonoBehaviour {
 
 	//Hotkey Power Variables
 	int currentSelection = 0;
-	Powers[] powersToUse = new Powers[] {new Powers("Chaos"), new Powers("Sniper"), new Powers("Stretch")};
+	Powers[] powersToUse = new Powers[] {new Powers("Chaos"), new Powers("Sniper"), new Powers("Stretch"), new Powers("WreckingBall")};
 
 	//Power Bar Variables
 	public float energy, maxEnergy = 100.0f;
@@ -64,6 +64,8 @@ public class Master : MonoBehaviour {
 	Powers activeSkill = new Powers();
 	public bool isSniping = false;
 	List<GameObject> snipedBricks = new List<GameObject>();
+	[SerializeField]
+	GameObject energyObject;
 
 	//Wrecking Ball variables
 	float wreckingTime = 0f;
@@ -119,6 +121,8 @@ public class Master : MonoBehaviour {
 			currentSelection = 1;
 		else if(Input.GetKeyDown(KeyCode.Alpha3) && !isSniping && !isWrecking)
 			currentSelection = 2;
+		else if(Input.GetKeyDown(KeyCode.Alpha4) && !isSniping && !isWrecking)
+			currentSelection = 3;
 
 		if(Time.timeSinceLevelLoad >= nextSpawn && ballInPlay)
 		{
@@ -298,6 +302,9 @@ public class Master : MonoBehaviour {
 			{
 				for(int i = 0; i < snipedBricks.Count; i++)
 				{
+					if(snipedBricks[i].GetComponent<BrickScript>().isEnergy())
+						Instantiate(energyObject,snipedBricks[i].transform.position,Quaternion.identity);
+					
 					RemoveBrick(snipedBricks[i].transform);
 					Destroy(snipedBricks[i]);
 				}
@@ -404,6 +411,9 @@ public class Master : MonoBehaviour {
 			break;
 		case 2:
 			return powersToUse[2].GetCooldownTime();
+			break;
+		case 3:
+			return powersToUse[3].GetCooldownTime();
 			break;
 		}
 

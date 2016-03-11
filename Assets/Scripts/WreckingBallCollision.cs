@@ -20,5 +20,6 @@ public class WreckingBallCollision : MonoBehaviour {
 			Master.instance.wreckingDamage--;
 			SendMessageUpwards("SetHP", 0, SendMessageOptions.RequireReceiver);
 		}
+			
 	}
 }

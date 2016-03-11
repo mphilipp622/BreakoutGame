@@ -15,6 +15,12 @@ public class BrickScript : MonoBehaviour
 	SpriteRenderer renderer;
 	Transform sniperHighlight, wreckingBallTrigger;
 
+	[SerializeField]
+	GameObject energy;
+
+	bool isChargeBrick;
+	int chargeBrick;
+
     void Start()
     {
 		renderer = GetComponent<SpriteRenderer>();
@@ -28,6 +34,13 @@ public class BrickScript : MonoBehaviour
 		outline.SetPosition(1, new Vector3(GetComponent<SpriteRenderer>().bounds.max.x, transform.position.y, -1.0f));*/
 		brickMat = renderer.material;
         hp = Random.Range(1, 4);
+		chargeBrick = Random.Range(1, 10);
+		if(chargeBrick == 1)
+		{
+			isChargeBrick = true;
+			hp = 1;
+			renderer.material = Master.instance.outlineMats[3];
+		}
     }
 
     void Update()
@@ -35,15 +48,19 @@ public class BrickScript : MonoBehaviour
 		//outline.SetPosition(0, new Vector3(GetComponent<SpriteRenderer>().bounds.min.x, transform.position.y, -1.0f));
 		//outline.SetPosition(1, new Vector3(GetComponent<SpriteRenderer>().bounds.max.x, transform.position.y, -1.0f));
 
+
         switch (hp)
         {
             case 0:
+				if(isChargeBrick)
+					Instantiate(energy, transform.position, transform.rotation);
 				Master.instance.RemoveBrick(transform);
                 Destroy(gameObject);
                 break;
             case 1:
                 outlineInt = 1;
-				renderer.material = Master.instance.outlineMats[0];
+				if(!isChargeBrick)
+					renderer.material = Master.instance.outlineMats[0];
                 break;
             case 2:
                 outlineInt = 2;
@@ -58,6 +75,7 @@ public class BrickScript : MonoBehaviour
 				Destroy(gameObject);
 				break;
         }
+	
         
         if (transform.position.y <= Master.instance.paddle.position.y)
             Master.instance.gameOver = true;
@@ -115,4 +133,9 @@ public class BrickScript : MonoBehaviour
     {
         index = newIndex;
     }
+
+	public bool isEnergy()
+	{
+		return isChargeBrick;
+	}
 }
