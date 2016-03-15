@@ -153,12 +153,12 @@ public class Master : MonoBehaviour {
 		}
 		else if(isWrecking && Time.realtimeSinceStartup < wreckingTime && wreckingStacks < powersToUse[currentSelection].GetSkillLevel())
 		{
-			if(Input.GetAxis("Mouse ScrollWheel") > 0f)
-				wreckingStacks += Input.GetAxis("Mouse ScrollWheel") * (powersToUse[currentSelection].GetSkillLevel() * 0.15f);
+			if(Input.GetAxis("Mouse Y") > 0f)
+				wreckingStacks += Input.GetAxis("Mouse Y") * (powersToUse[currentSelection].GetSkillLevel() * 0.01f);
 				//wreckingStacks += Input.GetAxis("Mouse ScrollWheel") / (powersToUse[currentSelection].GetSkillLevel());
-			else if(Input.GetAxis("Mouse ScrollWheel") < 0f)
+			else if(Input.GetAxis("Mouse Y") < 0f)
 				//Add to wreckingStacks by multiplying the negative axis movement by -1 to create a positive result.
-				wreckingStacks += -1 * (Input.GetAxis("Mouse ScrollWheel")) * (powersToUse[currentSelection].GetSkillLevel() * .15f);
+				wreckingStacks += -1 * (Input.GetAxis("Mouse Y")) * (powersToUse[currentSelection].GetSkillLevel() * 0.01f);
 				//wreckingStacks += -1 * (Input.GetAxis("Mouse ScrollWheel") / (powersToUse[currentSelection].GetSkillLevel()));
 		}
 
