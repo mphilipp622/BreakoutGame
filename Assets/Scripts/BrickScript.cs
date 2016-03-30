@@ -14,6 +14,8 @@ public class BrickScript : MonoBehaviour
 	//LineRenderer outline;
 	SpriteRenderer renderer;
 	Transform sniperHighlight, wreckingBallTrigger;
+	[SerializeField]
+	int scoreValue;
 
 	[SerializeField]
 	GameObject energy;
@@ -34,12 +36,31 @@ public class BrickScript : MonoBehaviour
 		outline.SetPosition(1, new Vector3(GetComponent<SpriteRenderer>().bounds.max.x, transform.position.y, -1.0f));*/
 		brickMat = renderer.material;
         hp = Random.Range(1, 4);
+
+
 		chargeBrick = Random.Range(1, 10);
 		if(chargeBrick == 1)
 		{
 			isChargeBrick = true;
 			hp = 1;
 			renderer.material = Master.instance.outlineMats[3];
+		}
+
+		//setup scoreValue
+		switch(hp)
+		{
+		case 1:
+			if(isChargeBrick)
+				scoreValue = 200;
+			else
+				scoreValue = 100;
+			break;
+		case 2:
+			scoreValue = 500;
+			break;
+		case 3:
+			scoreValue = 1000;
+			break;
 		}
     }
 
@@ -48,12 +69,12 @@ public class BrickScript : MonoBehaviour
 		//outline.SetPosition(0, new Vector3(GetComponent<SpriteRenderer>().bounds.min.x, transform.position.y, -1.0f));
 		//outline.SetPosition(1, new Vector3(GetComponent<SpriteRenderer>().bounds.max.x, transform.position.y, -1.0f));
 
-
         switch (hp)
         {
             case 0:
 				if(isChargeBrick)
 					Instantiate(energy, transform.position, transform.rotation);
+				Master.instance.SetScore(scoreValue); //add to score
 				Master.instance.RemoveBrick(transform);
                 Destroy(gameObject);
                 break;
@@ -137,5 +158,10 @@ public class BrickScript : MonoBehaviour
 	public bool isEnergy()
 	{
 		return isChargeBrick;
+	}
+
+	public int GetScoreValue()
+	{
+		return scoreValue;
 	}
 }

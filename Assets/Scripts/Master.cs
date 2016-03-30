@@ -79,6 +79,9 @@ public class Master : MonoBehaviour {
 	Vector3 originalScale;
 	Animator paddleAnimator;
 
+	//Score Variables
+	int score = 0;
+
 	void Awake()
 	{
 		if (instance == null)
@@ -306,6 +309,7 @@ public class Master : MonoBehaviour {
 						Instantiate(energyObject,snipedBricks[i].transform.position,Quaternion.identity);
 					
 					RemoveBrick(snipedBricks[i].transform);
+					SetScore(snipedBricks[i].GetComponent<BrickScript>().GetScoreValue());
 					Destroy(snipedBricks[i]);
 				}
 				snipedBricks.Clear();
@@ -469,6 +473,16 @@ public class Master : MonoBehaviour {
 	{
 		return Resources.Load<Sprite>( powersToUse[num].GetIconPath());
 	}
+
+	public void SetScore(int value)
+	{
+		score += value;
+	}
+
+	public int GetScore()
+	{
+		return score;
+	}
 }
 
 [Serializable]
@@ -491,29 +505,29 @@ class Powers {
 		{
 		case "Chaos":
 			name = "Chaos";
-			skillCost = 10;
 			skillLevel = 1;
+			skillCost = 10;
 			cooldownTime = 4.0f;
 			skillIconPath = "HotkeyIcons/ChaosBall";
 			break;
 		case "Sniper":
 			name = "Sniper";
-			skillCost = 15;
 			skillLevel = 1;
+			skillCost = 15;
 			cooldownTime = 8.0f;
 			skillIconPath = "HotkeyIcons/SniperBall";
 			break;
 		case "WreckingBall":
 			name = "WreckingBall";
-			skillCost = 20;
 			skillLevel = 6; //CHANGE THIS WHEN FINALIZING
+			skillCost = 20;
 			cooldownTime = 6.0f;
 			skillIconPath = "HotkeyIcons/WreckingBall";
 			break;
 		case "Stretch":
 			name = "Stretch";
-			skillCost = 15;
 			skillLevel = 6;
+			skillCost = 15;
 			cooldownTime = 8.0f;
 			skillIconPath = "HotkeyIcons/PaddleStretch";
 			break;
@@ -576,6 +590,5 @@ class Powers {
 	{
 		timeOnCooldown = Time.timeSinceLevelLoad + cooldownTime;
 	}
-
 
 }
