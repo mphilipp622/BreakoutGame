@@ -39,7 +39,7 @@ public class Master : MonoBehaviour {
 
 	//Hotkey Power Variables
 	int currentSelection = 0;
-	Powers[] powersToUse = new Powers[] {new Powers("Chaos"), new Powers("Sniper"), new Powers("Stretch"), new Powers("WreckingBall")};
+	Powers[] powersToUse = new Powers[] {new Powers("Chaos"), new Powers("Sniper"), new Powers("WreckingBall"), new Powers("Stretch")};
 
 	//Power Bar Variables
 	public float energy, maxEnergy = 100.0f;
@@ -80,7 +80,10 @@ public class Master : MonoBehaviour {
 	Animator paddleAnimator;
 
 	//Score Variables
-	int score = 0;
+	int score, milestone = 10000, milestonesReached = 0;
+
+	int MAX_LEVEL = 10;
+	int stacks = 1;
 
 	void Awake()
 	{
@@ -91,6 +94,7 @@ public class Master : MonoBehaviour {
 	}
 
 	void Start () {
+		score = 0;
 		powerBar = GameObject.Find("PowerBar").GetComponent<Slider>();
 		ball = GameObject.Find("Ball").GetComponent<Rigidbody2D>();
 		ballSpeed = ball.GetComponent<BallScript>().ballSpeedMultiplier;
@@ -108,7 +112,6 @@ public class Master : MonoBehaviour {
 		powerBar.maxValue = maxEnergy;
 		texture = new Texture2D((int) bricks[0].GetComponent<SpriteRenderer>().sprite.textureRect.width, (int) bricks[0].GetComponent<SpriteRenderer>().sprite.textureRect.height);
 
-
 		SpawnNewBricks();
 
 		//activeSkill.SetSkillLevel(2);
@@ -118,14 +121,71 @@ public class Master : MonoBehaviour {
 	void Update()
 	{
 		//Hotkey Functionality
-		if(Input.GetKeyDown(KeyCode.Alpha1) && !isSniping && !isWrecking)
+		if(Input.GetKeyDown(KeyCode.Q) && !isSniping && !isWrecking)
 			currentSelection = 0;
-		else if(Input.GetKeyDown(KeyCode.Alpha2) && !isSniping && !isWrecking)
+		else if(Input.GetKeyDown(KeyCode.W) && !isSniping && !isWrecking)
 			currentSelection = 1;
-		else if(Input.GetKeyDown(KeyCode.Alpha3) && !isSniping && !isWrecking)
+		else if(Input.GetKeyDown(KeyCode.E) && !isSniping && !isWrecking)
 			currentSelection = 2;
-		else if(Input.GetKeyDown(KeyCode.Alpha4) && !isSniping && !isWrecking)
+		else if(Input.GetKeyDown(KeyCode.R) && !isSniping && !isWrecking)
 			currentSelection = 3;
+
+		//score milestone. Used for speeding up spawn and leveling up
+		if(score >= milestone && milestonesReached < MAX_LEVEL)
+		{
+			//change spawn time for bricks
+			if(spawnTime - 1.0f > 0f)
+			{
+				spawnTime -= 1.0f;
+			}
+
+			for(int i = 0; i < powersToUse.Length; i++)
+			{
+				powersToUse[i].LevelUp();
+			}
+				
+			milestone += 10000;
+			milestonesReached++;
+
+			switch(milestonesReached+1)
+			{
+			case 4:
+				stacks++;
+				break;
+			case 6:
+				stacks++;
+				break;
+			case 8:
+				stacks++;
+				break;
+			case 10:
+				stacks++;
+				break;
+			default:
+				break;
+			}
+		}
+
+		if(Time.timeSinceLevelLoad > powersToUse[0].GetStackTimer() && powersToUse[0].GetStacks() < stacks)
+		{
+			powersToUse[0].AddStack();
+			powersToUse[0].StackTimer();
+		}
+		else if(Time.timeSinceLevelLoad > powersToUse[1].GetStackTimer() && powersToUse[1].GetStacks() < stacks)
+		{
+			powersToUse[1].AddStack();
+			powersToUse[1].StackTimer();
+		}
+		else if(Time.timeSinceLevelLoad > powersToUse[2].GetStackTimer() && powersToUse[2].GetStacks() < stacks)
+		{
+			powersToUse[2].AddStack();
+			powersToUse[2].StackTimer();
+		}
+		else if(Time.timeSinceLevelLoad > powersToUse[3].GetStackTimer() && powersToUse[3].GetStacks() < stacks)
+		{
+			powersToUse[3].AddStack();
+			powersToUse[3].StackTimer();
+		}
 
 		if(Time.timeSinceLevelLoad >= nextSpawn && ballInPlay)
 		{
@@ -148,13 +208,14 @@ public class Master : MonoBehaviour {
 		}
 
 		//Used for Mousewheel mini game. If we have exceeded our time limit for the minigame, resume play. Otherwise, allow mousewheel input to dictate wreckingDamage.
-		if(isWrecking && Time.realtimeSinceStartup > wreckingTime)
-		{
-			wreckingDamage = (int)wreckingStacks; //take the stacks generated from mousewheel minigame and assign them to wreckingDamage. Decimal gets truncated during cast.
-			Time.timeScale = 1f;
-			isWrecking = false;
-		}
-		else if(isWrecking && Time.realtimeSinceStartup < wreckingTime && wreckingStacks < powersToUse[currentSelection].GetSkillLevel())
+		//if(isWrecking /*&& Time.realtimeSinceStartup > wreckingTime*/)
+		//{
+		//	wreckingDamage = powersToUse[currentSelection].GetStacks();
+			//wreckingDamage = (int)wreckingStacks; //take the stacks generated from mousewheel minigame and assign them to wreckingDamage. Decimal gets truncated during cast.
+			//Time.timeScale = 1f;
+		//	isWrecking = false;
+		//}
+		/*else if(isWrecking && Time.realtimeSinceStartup < wreckingTime && wreckingStacks < powersToUse[currentSelection].GetSkillLevel())
 		{
 			if(Input.GetAxis("Mouse Y") > 0f)
 				wreckingStacks += Input.GetAxis("Mouse Y") * (powersToUse[currentSelection].GetSkillLevel() * 0.01f);
@@ -163,7 +224,7 @@ public class Master : MonoBehaviour {
 				//Add to wreckingStacks by multiplying the negative axis movement by -1 to create a positive result.
 				wreckingStacks += -1 * (Input.GetAxis("Mouse Y")) * (powersToUse[currentSelection].GetSkillLevel() * 0.01f);
 				//wreckingStacks += -1 * (Input.GetAxis("Mouse ScrollWheel") / (powersToUse[currentSelection].GetSkillLevel()));
-		}
+		}*/
 
 		//Monitor Stretch Time and reset paddle when it's done
 		if (isStretched && Time.timeSinceLevelLoad > stretchTime)
@@ -287,7 +348,7 @@ public class Master : MonoBehaviour {
 		if(energy >= powersToUse[currentSelection].GetSkillCost() && Time.timeSinceLevelLoad > powersToUse[currentSelection].GetCooldownTime())
 		{
 			energy -= powersToUse[currentSelection].GetSkillCost();
-			for(int i = 0; i < powersToUse[currentSelection].GetSkillLevel(); i++)
+			for(int i = 0; i < powersToUse[currentSelection].GetStacks() /*powersToUse[currentSelection].GetSkillLevel()*/; i++)
 			{
 				spawnedBalls[i] = (Rigidbody2D) Instantiate (spawnBall, ball.position, Quaternion.identity);
 				spawnedBalls[i].velocity = new Vector2(UnityEngine.Random.Range(-20, 20), ball.velocity.y);		
@@ -315,6 +376,7 @@ public class Master : MonoBehaviour {
 				snipedBricks.Clear();
 			}
 			Time.timeScale = 1;
+			powersToUse[currentSelection].StartCooldown();
 			isSniping = false;
 		}
 
@@ -323,7 +385,6 @@ public class Master : MonoBehaviour {
 			Time.timeScale = 0;
 			energy -= powersToUse[currentSelection].GetSkillCost();
 			snipeTime = Time.realtimeSinceStartup + 5.0f;
-			powersToUse[currentSelection].StartCooldown();
 			isSniping = true;
 		}
 	}
@@ -342,12 +403,13 @@ public class Master : MonoBehaviour {
 
 		if(energy >= powersToUse[currentSelection].GetSkillCost() && !isWrecking && Time.timeSinceLevelLoad > powersToUse[currentSelection].GetCooldownTime())
 		{
-			Time.timeScale = 0;
+			//Time.timeScale = 0;
 			energy -= powersToUse[currentSelection].GetSkillCost();
-			wreckingTime = Time.realtimeSinceStartup + 3.0f; //used for the timing window
+			//wreckingTime = Time.realtimeSinceStartup + 3.0f; //used for the timing window
+			wreckingDamage = powersToUse[currentSelection].GetStacks();
 			powersToUse[currentSelection].StartCooldown();
-			wreckingStacks = 0f;
-			isWrecking = true;
+			//wreckingStacks = 0f;
+		//	isWrecking = true;
 		}
 	}
 
@@ -355,7 +417,10 @@ public class Master : MonoBehaviour {
 	{
 		if(energy >= powersToUse[currentSelection].GetSkillCost() && !isStretched && Time.timeSinceLevelLoad > powersToUse[currentSelection].GetCooldownTime())
 		{
-			paddle.localScale = new Vector3((powersToUse[currentSelection].GetSkillLevel() * 0.15f), paddle.localScale.y, paddle.localScale.z);
+			if(powersToUse[currentSelection].GetStacks() == 1)
+				paddle.localScale = new Vector3((powersToUse[currentSelection].GetStacks() * .75f), paddle.localScale.y, paddle.localScale.z);
+			else
+				paddle.localScale = new Vector3((powersToUse[currentSelection].GetStacks() * .40f), paddle.localScale.y, paddle.localScale.z);
 			stretchTime = Time.timeSinceLevelLoad + (powersToUse[currentSelection].GetSkillLevel() / 1.5f);
 			powersToUse[currentSelection].StartCooldown();
 			isStretched = true;
@@ -365,7 +430,7 @@ public class Master : MonoBehaviour {
 	public void SetBricksToSnipe(GameObject brick)
 	{
 		//This is how many bricks we can snipe
-		if(!snipedBricks.Contains(brick) && snipedBricks.Count < powersToUse[currentSelection].GetSkillLevel())
+		if(!snipedBricks.Contains(brick) && snipedBricks.Count < powersToUse[currentSelection].GetStacks() /*powersToUse[currentSelection].GetSkillLevel()*/)
 		{
 			snipedBricks.Add(brick);
 		}
@@ -483,6 +548,11 @@ public class Master : MonoBehaviour {
 	{
 		return score;
 	}
+
+	public int GetSkillStacks(int index)
+	{
+		return powersToUse[index].GetStacks();
+	}
 }
 
 [Serializable]
@@ -493,7 +563,8 @@ class Powers {
 	int skillLevel;
 	string skillIconPath;
 	String name;
-	float cooldownTime, timeOnCooldown;
+	float cooldownTime, timeOnCooldown, stackTimer;
+	int stacks = 1;
 
 	public Powers()
 	{
@@ -508,6 +579,7 @@ class Powers {
 			skillLevel = 1;
 			skillCost = 10;
 			cooldownTime = 4.0f;
+			stackTimer = cooldownTime;
 			skillIconPath = "HotkeyIcons/ChaosBall";
 			break;
 		case "Sniper":
@@ -515,20 +587,23 @@ class Powers {
 			skillLevel = 1;
 			skillCost = 15;
 			cooldownTime = 8.0f;
+			stackTimer = cooldownTime;
 			skillIconPath = "HotkeyIcons/SniperBall";
 			break;
 		case "WreckingBall":
 			name = "WreckingBall";
-			skillLevel = 6; //CHANGE THIS WHEN FINALIZING
+			skillLevel = 1; //CHANGE THIS WHEN FINALIZING
 			skillCost = 20;
-			cooldownTime = 6.0f;
+			cooldownTime = 10.0f;
+			stackTimer = cooldownTime;
 			skillIconPath = "HotkeyIcons/WreckingBall";
 			break;
 		case "Stretch":
 			name = "Stretch";
-			skillLevel = 6;
+			skillLevel = 1;
 			skillCost = 15;
 			cooldownTime = 8.0f;
+			stackTimer = cooldownTime;
 			skillIconPath = "HotkeyIcons/PaddleStretch";
 			break;
 		}
@@ -567,8 +642,20 @@ class Powers {
 
 	public void LevelUp()
 	{
-		skillLevel++;
-		skillCost = skillCost * (skillLevel * 0.5f);
+		switch(name)
+		{
+		case "Chaos":
+			cooldownTime -= (cooldownTime / 10);
+			break;
+		case "Sniper":
+			cooldownTime -= (cooldownTime / 10) / 2;
+			break;
+		case "Wrecking":
+			cooldownTime -= (cooldownTime / 10) / 2;
+			break;
+		}
+		//skillLevel++;
+		//skillCost = skillCost * (skillLevel * 0.5f);
 	}
 
 	public String GetName()
@@ -589,6 +676,27 @@ class Powers {
 	public void StartCooldown()
 	{
 		timeOnCooldown = Time.timeSinceLevelLoad + cooldownTime;
+		stacks = 0;
+	}
+
+	public void StackTimer()
+	{
+		stackTimer = Time.timeSinceLevelLoad + cooldownTime;
+	}
+
+	public float GetStackTimer()
+	{
+		return stackTimer;
+	}
+
+	public void AddStack()
+	{
+		stacks++;
+	}
+
+	public int GetStacks()
+	{
+		return stacks;
 	}
 
 }
