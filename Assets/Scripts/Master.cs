@@ -43,7 +43,7 @@ public class Master : MonoBehaviour {
 
 	//Power Bar Variables
 	public float energy, maxEnergy = 100.0f;
-	float energyRegenSpeed, energyRegenTime, energyRegenAmount = 1.0f;
+	float energyRegenSpeed, energyRegenTime, energyRegenAmount = 2.0f;
 	private Slider powerBar;
 
 	//Chaos Ball Variables
@@ -79,8 +79,8 @@ public class Master : MonoBehaviour {
 	Vector3 originalScale;
 	Animator paddleAnimator;
 
-	//Score Variables
-	int score, milestone = 10000, milestonesReached = 0;
+	//Score and Leveling Variables
+	int score, milestone = 5000, milestonesReached = 0; //Used for Leveling. When Score reaches milestone, milestonesReached increments and skills level up accordingly.
 
 	int MAX_LEVEL = 10;
 	int stacks = 1;
@@ -91,9 +91,13 @@ public class Master : MonoBehaviour {
 			instance = this;
 		else if (instance != this)
 			Destroy (gameObject);
+
+		Cursor.visible = false;
+		Cursor.lockState = CursorLockMode.Confined;
 	}
 
-	void Start () {
+	void Start () 
+	{
 		score = 0;
 		powerBar = GameObject.Find("PowerBar").GetComponent<Slider>();
 		ball = GameObject.Find("Ball").GetComponent<Rigidbody2D>();
@@ -144,7 +148,7 @@ public class Master : MonoBehaviour {
 				powersToUse[i].LevelUp();
 			}
 				
-			milestone += 10000;
+			milestone *= 2; //Next milestone equals double current milestone
 			milestonesReached++;
 
 			switch(milestonesReached+1)
@@ -347,13 +351,17 @@ public class Master : MonoBehaviour {
 	{
 		if(energy >= powersToUse[currentSelection].GetSkillCost() && Time.timeSinceLevelLoad > powersToUse[currentSelection].GetCooldownTime())
 		{
-			energy -= powersToUse[currentSelection].GetSkillCost();
+			if(powersToUse[currentSelection].GetStacks() > 1)
+				energy -= powersToUse[currentSelection].GetSkillCost() * (powersToUse[currentSelection].GetStacks() * 0.5f);
+			else
+				energy -= powersToUse[currentSelection].GetSkillCost();
 			for(int i = 0; i < powersToUse[currentSelection].GetStacks() /*powersToUse[currentSelection].GetSkillLevel()*/; i++)
 			{
 				spawnedBalls[i] = (Rigidbody2D) Instantiate (spawnBall, ball.position, Quaternion.identity);
 				spawnedBalls[i].velocity = new Vector2(UnityEngine.Random.Range(-20, 20), ball.velocity.y);		
 			}
 			powersToUse[currentSelection].StartCooldown();
+			powersToUse[currentSelection].StackTimer();
 		}
 	}
 
@@ -377,13 +385,17 @@ public class Master : MonoBehaviour {
 			}
 			Time.timeScale = 1;
 			powersToUse[currentSelection].StartCooldown();
+			powersToUse[currentSelection].StackTimer();
 			isSniping = false;
 		}
 
 		if(energy >= powersToUse[currentSelection].GetSkillCost() && !isSniping && Time.timeSinceLevelLoad > powersToUse[currentSelection].GetCooldownTime())
 		{
 			Time.timeScale = 0;
-			energy -= powersToUse[currentSelection].GetSkillCost();
+			if(powersToUse[currentSelection].GetStacks() > 1)
+				energy -= powersToUse[currentSelection].GetSkillCost() * (powersToUse[currentSelection].GetStacks() * 0.5f);
+			else
+				energy -= powersToUse[currentSelection].GetSkillCost();
 			snipeTime = Time.realtimeSinceStartup + 5.0f;
 			isSniping = true;
 		}
@@ -404,10 +416,14 @@ public class Master : MonoBehaviour {
 		if(energy >= powersToUse[currentSelection].GetSkillCost() && !isWrecking && Time.timeSinceLevelLoad > powersToUse[currentSelection].GetCooldownTime())
 		{
 			//Time.timeScale = 0;
-			energy -= powersToUse[currentSelection].GetSkillCost();
+			if(powersToUse[currentSelection].GetStacks() > 1)
+				energy -= powersToUse[currentSelection].GetSkillCost() * (powersToUse[currentSelection].GetStacks() * 0.5f);
+			else
+				energy -= powersToUse[currentSelection].GetSkillCost();
 			//wreckingTime = Time.realtimeSinceStartup + 3.0f; //used for the timing window
 			wreckingDamage = powersToUse[currentSelection].GetStacks();
 			powersToUse[currentSelection].StartCooldown();
+			powersToUse[currentSelection].StackTimer();
 			//wreckingStacks = 0f;
 		//	isWrecking = true;
 		}
@@ -421,8 +437,10 @@ public class Master : MonoBehaviour {
 				paddle.localScale = new Vector3((powersToUse[currentSelection].GetStacks() * .75f), paddle.localScale.y, paddle.localScale.z);
 			else
 				paddle.localScale = new Vector3((powersToUse[currentSelection].GetStacks() * .40f), paddle.localScale.y, paddle.localScale.z);
-			stretchTime = Time.timeSinceLevelLoad + (powersToUse[currentSelection].GetSkillLevel() / 1.5f);
+			//stretchTime = Time.timeSinceLevelLoad + (powersToUse[currentSelection].GetSkillLevel() / 1.5f);
+			stretchTime = Time.timeSinceLevelLoad + (powersToUse[currentSelection].GetBaseCooldown() / 2);
 			powersToUse[currentSelection].StartCooldown();
+			powersToUse[currentSelection].StackTimer();
 			isStretched = true;
 		}
 	}
@@ -487,6 +505,11 @@ public class Master : MonoBehaviour {
 		}
 
 		return 0f;
+	}
+
+	public int GetMilestone()
+	{
+		return milestonesReached + 1;
 	}
 
 	public Transform GetPaddle()
@@ -578,8 +601,8 @@ class Powers {
 			name = "Chaos";
 			skillLevel = 1;
 			skillCost = 10;
-			cooldownTime = 4.0f;
-			stackTimer = cooldownTime;
+			cooldownTime = 5.0f;
+		//	stackTimer = cooldownTime;
 			skillIconPath = "HotkeyIcons/ChaosBall";
 			break;
 		case "Sniper":
@@ -587,7 +610,7 @@ class Powers {
 			skillLevel = 1;
 			skillCost = 15;
 			cooldownTime = 8.0f;
-			stackTimer = cooldownTime;
+		//	stackTimer = cooldownTime;
 			skillIconPath = "HotkeyIcons/SniperBall";
 			break;
 		case "WreckingBall":
@@ -595,15 +618,15 @@ class Powers {
 			skillLevel = 1; //CHANGE THIS WHEN FINALIZING
 			skillCost = 20;
 			cooldownTime = 10.0f;
-			stackTimer = cooldownTime;
+		//	stackTimer = cooldownTime;
 			skillIconPath = "HotkeyIcons/WreckingBall";
 			break;
 		case "Stretch":
 			name = "Stretch";
 			skillLevel = 1;
 			skillCost = 15;
-			cooldownTime = 8.0f;
-			stackTimer = cooldownTime;
+			cooldownTime = 10.0f;
+		//	stackTimer = cooldownTime;
 			skillIconPath = "HotkeyIcons/PaddleStretch";
 			break;
 		}
@@ -652,6 +675,9 @@ class Powers {
 			break;
 		case "Wrecking":
 			cooldownTime -= (cooldownTime / 10) / 2;
+			break;
+		case "Stretch":
+			cooldownTime -= (cooldownTime / 10);
 			break;
 		}
 		//skillLevel++;

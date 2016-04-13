@@ -51,7 +51,7 @@ public class BrickScript : MonoBehaviour
 		{
 		case 1:
 			if(isChargeBrick)
-				scoreValue = 200;
+				scoreValue = 300;
 			else
 				scoreValue = 100;
 			break;

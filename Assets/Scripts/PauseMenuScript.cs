@@ -14,9 +14,11 @@ public class PauseMenuScript : MonoBehaviour {
 		if (Input.GetKeyDown (KeyCode.Escape) && Time.timeScale > 0) {
 			Time.timeScale = 0;
 			pausePanel.SetActive (true);
+			Cursor.visible = true;
 		} else if (Input.GetKeyDown (KeyCode.Escape) && Time.timeScale == 0) {
 			Time.timeScale = 1;
 			pausePanel.SetActive (false);
+			Cursor.visible = false;
 		}
 	}
 }
