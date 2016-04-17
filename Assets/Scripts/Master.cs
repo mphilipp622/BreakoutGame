@@ -207,6 +207,7 @@ public class Master : MonoBehaviour {
 		if(isSniping && Time.realtimeSinceStartup > snipeTime)
 		{
 			Time.timeScale = 1f;
+			Cursor.visible = false;
 			snipedBricks.Clear(); // clear the selected bricks list
 			isSniping = false;
 		}
@@ -369,6 +370,7 @@ public class Master : MonoBehaviour {
 	{
 		if(isSniping && Time.timeScale == 0)
 		{
+
 			//Debug.Log("True");
 			if(snipedBricks.Count > 0) //Destroy bricks if there are any added
 			{
@@ -392,6 +394,7 @@ public class Master : MonoBehaviour {
 		if(energy >= powersToUse[currentSelection].GetSkillCost() && !isSniping && Time.timeSinceLevelLoad > powersToUse[currentSelection].GetCooldownTime())
 		{
 			Time.timeScale = 0;
+			Cursor.visible = true;
 			if(powersToUse[currentSelection].GetStacks() > 1)
 				energy -= powersToUse[currentSelection].GetSkillCost() * (powersToUse[currentSelection].GetStacks() * 0.5f);
 			else

@@ -15,6 +15,7 @@ public class GameOverMenuScript : MonoBehaviour {
 		if (Master.instance.gameOver) 
 		{
 			gameOverPanel.SetActive(true);
+			Cursor.visible = true;
 		}
 	}
 }
