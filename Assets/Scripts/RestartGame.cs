@@ -17,6 +17,7 @@ public class RestartGame : MonoBehaviour {
 
 	public void Restart()
 	{
+		
 		Application.LoadLevel (Application.loadedLevel);
 
 	}

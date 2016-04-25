@@ -9,9 +9,11 @@ public class BallScript : MonoBehaviour {
 	float min_x_velocity = 5.0f;
 	Material ballMat;
 	Light spotlight;
+	AudioSource ballHit;
 
 	void Start () 
 	{
+		ballHit = GetComponent<AudioSource>();
 		ball = GetComponent<Rigidbody2D> ();
 		ballMat = GetComponent<SpriteRenderer>().material;
 
@@ -94,6 +96,10 @@ public class BallScript : MonoBehaviour {
 
 	}
 
+	void OnCollisionEnter2D(Collision2D collision)
+	{
+		ballHit.Play();
+	}
 	/*void OnCollisionEnter2D (Collision2D collision){
 		if (collision.gameObject.tag == "Player") {
 			if(transform.position.x < collision.collider.bounds.center.x){

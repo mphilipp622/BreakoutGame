@@ -26,7 +26,7 @@ public class Master : MonoBehaviour {
 	float nextSpawn;
 
 	public static Master instance = null; //Singleton
-	public bool gameOver = false;
+	public bool gameOver;
 	public Transform paddle;
 
     
@@ -79,6 +79,8 @@ public class Master : MonoBehaviour {
 	Vector3 originalScale;
 	Animator paddleAnimator;
 
+	Animator levelBorder;
+
 	//Score and Leveling Variables
 	int score, milestone = 5000, milestonesReached = 0; //Used for Leveling. When Score reaches milestone, milestonesReached increments and skills level up accordingly.
 
@@ -98,6 +100,7 @@ public class Master : MonoBehaviour {
 
 	void Start () 
 	{
+		gameOver = false;
 		score = 0;
 		powerBar = GameObject.Find("PowerBar").GetComponent<Slider>();
 		ball = GameObject.Find("Ball").GetComponent<Rigidbody2D>();
@@ -115,7 +118,9 @@ public class Master : MonoBehaviour {
 		chaosCost = 15.0f;
 		powerBar.maxValue = maxEnergy;
 		texture = new Texture2D((int) bricks[0].GetComponent<SpriteRenderer>().sprite.textureRect.width, (int) bricks[0].GetComponent<SpriteRenderer>().sprite.textureRect.height);
+		levelBorder = GameObject.Find("LevelUpBorder").GetComponent<Animator>();
 
+		MusicSingleton.instance.ResetPitch();
 		SpawnNewBricks();
 
 		//activeSkill.SetSkillLevel(2);
@@ -150,6 +155,8 @@ public class Master : MonoBehaviour {
 				
 			milestone *= 2; //Next milestone equals double current milestone
 			milestonesReached++;
+			MusicSingleton.instance.SetPitch();
+			levelBorder.SetTrigger("LevelUp");
 
 			switch(milestonesReached+1)
 			{
@@ -386,6 +393,7 @@ public class Master : MonoBehaviour {
 				snipedBricks.Clear();
 			}
 			Time.timeScale = 1;
+			Cursor.visible = false;
 			powersToUse[currentSelection].StartCooldown();
 			powersToUse[currentSelection].StackTimer();
 			isSniping = false;
